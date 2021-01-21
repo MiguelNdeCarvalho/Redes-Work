@@ -6,7 +6,9 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <unistd.h>
-#define MAXDATASIZE 200 // max number of bytes we can get at once 
+#define MAXDATASIZE 200 // max number of bytes we can get at once
+#define SERVER_ADDR "time.nist.gov"
+#define SERVER_PORT "13"
 
 
 int main()
@@ -14,7 +16,7 @@ int main()
 	char buf[MAXDATASIZE];
 	struct addrinfo *result;
 
-	int addr_info = getaddrinfo("time.nist.gov", "13" , NULL, &result);
+	int addr_info = getaddrinfo(SERVER_ADDR , SERVER_PORT , NULL, &result);
         int sockfd = socket(AF_INET, SOCK_STREAM, 0); 
         int connected = connect(sockfd, result->ai_addr, result->ai_addrlen);
 
