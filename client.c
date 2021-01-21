@@ -7,8 +7,8 @@
 #include <string.h>
 #include <unistd.h>
 #define MAXDATASIZE 200 // max number of bytes we can get at once
-#define SERVER_ADDR "time.nist.gov"
-#define SERVER_PORT "13"
+#define SERVER_ADDR "127.0.0.1"
+#define SERVER_PORT "1300"
 
 
 int main()
