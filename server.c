@@ -19,6 +19,27 @@ typedef struct client{
 
 }client_t;
 
+typedef struct client_R{
+	
+	char nick_name[21]; //21 bytes; começa em 485 e termina em 506
+	int channel; //4bytes; começa em 507 e termina em 511
+	bool role;  //1 Byte; 512;
+
+}client_R_t;
+
+bool invalidCharacters(char *name) {
+  
+  int size = strlen(name); 
+
+  for (int i = 0; i<size;i++) {
+    //printf("i:%d\n",name[i]);
+    if (!((name[i] >= 48 && name[i] <=  57) || (name[i] >= 65 && name[i] <= 122) || name[i]==10)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 void print_client(client_t *n)
 {
 	printf("client_status( nick:%s role:%d channel:%d, cmd:%s)\n"
@@ -66,10 +87,23 @@ int main(int argc, char const *argv[])
   char buffer[BUFSIZE];
   int bytes;
 
+  //utilizadores
+  int size = 2;
+  client_R_t server_DB[20];
 
+  //admin
+  client_R_t *admin = malloc(sizeof(client_R_t));
+  strcpy(admin->nick_name,"admin\0");
+  admin->role = 2;
+  admin->channel = 0;
+  server_DB[0] = *admin;
 
-  char admin_nick[21] = "admin";
-  char admin_pass[21] = "1234"; //vamos fingir que foi encriptado :D
+  //user
+  client_R_t *user = malloc(sizeof(client_R_t));
+  strcpy(admin->nick_name,"joao\0");
+  admin->role = 1;
+  admin->channel = 0;
+  server_DB[1] = *user;
 
   int server_channels[4] = {1,2,3,4};
 
@@ -134,9 +168,9 @@ int main(int argc, char const *argv[])
           printf("Client connected.\n");
           client_t *cliente = malloc(sizeof(client_t));
           strcpy(cliente->nick_name,"Anonimo\0");
-          strcpy(cliente->cmd,"qwe\0");
+          strcpy(cliente->cmd,"\0");
           cliente->role = 1;
-          cliente->channel = 3;
+          cliente->channel = 1;
 
           //print_client(cliente);
           memcpy(&buffer, clientToBuffer(cliente), 512);
@@ -152,7 +186,8 @@ int main(int argc, char const *argv[])
               total += nb;
           }
 
-          printf("enviei %ldB\n",total);
+          //printf("enviei %ldB\n",total);
+          //free(cliente);
           //print_client(cliente);
           //sleep(1);
 
@@ -188,11 +223,93 @@ int main(int argc, char const *argv[])
                   close(i);
                   FD_CLR(i, &all_fds);  
                 }
-                else if (!strncmp(cliente_request->cmd,"MSG",3))
+                else if (!strncmp(cliente_request->cmd,"MSSG",4))
                 {
-                  strcpy(cliente_request->cmd,"ui\0");
-                  memcpy(&buffer, clientToBuffer(cliente_request), 512);
-                  send(i, buffer, BUFSIZE, 0 );
+
+                  client_t *server_response = malloc(sizeof(client_t));
+
+                  strcpy(server_response->nick_name,cliente_request->nick_name);
+                  server_response->role = cliente_request->role;
+                  server_response->channel = cliente_request->channel;
+
+
+                  ssize_t size = strlen(cliente_request->cmd);
+                  //printf("size: %ld\n",strlen(txt));
+
+                  if (size>=481)
+                  {
+                    strcpy(cliente_request->cmd,"RPLY 103 - Erro. Mensagem demasiado longa.\0");
+                    memcpy(&buffer, clientToBuffer(cliente_request), 512);
+                    send(i, buffer, BUFSIZE, 0 );
+                    free(server_response);
+                  
+                  }
+                  else if (size<=6)
+                  {
+                    strcpy(cliente_request->cmd,"RPLY 102 - Erro. Não há texto na mensagem.\0");
+                    memcpy(&buffer, clientToBuffer(cliente_request), 512);
+                    send(i, buffer, BUFSIZE, 0 );
+                    free(server_response);
+                  }
+                  else
+                  {
+
+
+                    strcpy(server_response->cmd,cliente_request->cmd);
+                    //loop que envia o server_response a cada um dos sockets 
+
+
+                    strcpy(cliente_request->cmd,"RPLY 101 - mensagem enviada com sucesso.\0");
+                    memcpy(&buffer, clientToBuffer(cliente_request), 512);
+                    send(i, buffer, BUFSIZE, 0 );
+                  }
+                  
+
+
+                }
+                else if (!strncmp(cliente_request->cmd,"NICK",4))
+                {
+                    client_t *server_response = malloc(sizeof(client_t));
+
+                    strcpy(server_response->nick_name,cliente_request->nick_name);
+                    server_response->role = cliente_request->role;
+                    server_response->channel = cliente_request->channel;
+
+                    //txt
+                    ssize_t size = strlen(cliente_request->cmd);
+                    char txt[21];
+                    memcpy( txt, &cliente_request->cmd,size);
+                    txt[size] = '\0';
+                    memcpy(txt, txt+5,size-5);
+                    memcpy(&txt[size-5],"\0",1);
+                    printf("txt: %s\n",txt);
+
+                    //printf("inv: %d\n",invalidCharacters(txt));
+                    if(strlen(txt)>=21)
+                    {
+                      strcpy(cliente_request->cmd,"RPLY 003 - Erro: Nome pedido não válido\0");
+                      memcpy(&buffer, clientToBuffer(cliente_request), 512);
+                      send(i, buffer, BUFSIZE, 0 );
+                    }
+                    else if(!invalidCharacters(txt))
+                    {
+                      strcpy(cliente_request->cmd,"RPLY 003 - Erro: Nome pedido não válido\0");
+                      memcpy(&buffer, clientToBuffer(cliente_request), 512);
+                      send(i, buffer, BUFSIZE, 0 );
+                    }
+                    else
+                    {
+                      strcpy(cliente_request->cmd,"Nome atribuído com sucesso\0");
+                      memcpy(&buffer, clientToBuffer(cliente_request), 512);
+                      send(i, buffer, BUFSIZE, 0 );
+                    }
+                    
+                    
+                    
+
+
+
+
                 }
                 else
                 {
@@ -201,6 +318,7 @@ int main(int argc, char const *argv[])
                   memcpy(&buffer, clientToBuffer(cliente_request), 512);
                   send(i, buffer, BUFSIZE, 0 );
                 }
+
           }
         }
       }

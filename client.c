@@ -82,22 +82,31 @@ int main()
 		total += nb;
 	}
 	/* send an ack here */
-	printf( "received and saved total of %zu bytes\n", total );
+	//printf( "received and saved total of %zu bytes\n", total );
 
 	
 	cliente = bufferToClient(buffer);
-	printf("ja recebi\n");
+	//printf("ja recebi\n");
 	print_client(cliente);
     memcpy(&buffer, clientToBuffer(cliente), 512);
-    cliente = bufferToClient(buffer);
-    print_client(cliente);
+    //cliente = bufferToClient(buffer);
+    //print_client(cliente);
 
 	while (1)
 	{	
 
+		char str[485]; 
 		printf("\nCONSOLE:");
-		scanf("%s",cliente->cmd);
+		fgets(str,485,stdin); 
+		printf("%s", str);
+		strcpy(cliente->cmd,str); 
+
+
+
+		//cliente->cmd
 		printf("\n");
+
+		//len()>
 		
 		if (!strcmp(cliente->cmd,"QUIT")){
 			printf("\nCLIENT CLOSED\n");
@@ -116,7 +125,7 @@ int main()
 			total += nb;
 		}
 
-		printf( "seded total of %zu bytes\n", total );
+		//printf( "seded total of %zu bytes\n", total );
 
 		printf("I sent this: ");
 		print_client(cliente);
@@ -139,7 +148,7 @@ int main()
 		printf("I received this: ");
 		print_client(server_response);
 	
-		
+		//if RPLY ...
 	
 	}
 	return 0;
