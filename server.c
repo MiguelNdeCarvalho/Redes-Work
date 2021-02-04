@@ -27,7 +27,7 @@ typedef struct client_R{
 
 }client_R_t;
 
-bool invalidCharacters(char *name) {
+bool validCharacters(char *name) {
   
   int size = strlen(name); 
 
@@ -72,6 +72,7 @@ char *clientToBuffer(client_t *n)
 
   return buf;
 } 
+
 
 int main(int argc, char const *argv[]) 
 {
@@ -169,8 +170,8 @@ int main(int argc, char const *argv[])
           client_t *cliente = malloc(sizeof(client_t));
           strcpy(cliente->nick_name,"Anonimo\0");
           strcpy(cliente->cmd,"\0");
-          cliente->role = 1;
-          cliente->channel = 1;
+          cliente->role = 0;
+          cliente->channel = 0;
 
           //print_client(cliente);
           memcpy(&buffer, clientToBuffer(cliente), 512);
@@ -215,7 +216,14 @@ int main(int argc, char const *argv[])
           }
           else {
 
-                if (!strncmp(cliente_request->cmd,"QUIT",4)){
+                client_t *server_response = malloc(sizeof(client_t));
+
+                strcpy(server_response->nick_name,cliente_request->nick_name);
+                server_response->role = cliente_request->role;
+                server_response->channel = cliente_request->channel;
+
+
+                if (!strncmp(cliente_request->cmd,"quit",4)){
                   
                   strcpy(cliente_request->cmd,"ok\0");
                   memcpy(&buffer, clientToBuffer(cliente_request), 512);
@@ -225,12 +233,6 @@ int main(int argc, char const *argv[])
                 }
                 else if (!strncmp(cliente_request->cmd,"MSSG",4))
                 {
-
-                  client_t *server_response = malloc(sizeof(client_t));
-
-                  strcpy(server_response->nick_name,cliente_request->nick_name);
-                  server_response->role = cliente_request->role;
-                  server_response->channel = cliente_request->channel;
 
 
                   ssize_t size = strlen(cliente_request->cmd);
@@ -269,11 +271,6 @@ int main(int argc, char const *argv[])
                 }
                 else if (!strncmp(cliente_request->cmd,"NICK",4))
                 {
-                    client_t *server_response = malloc(sizeof(client_t));
-
-                    strcpy(server_response->nick_name,cliente_request->nick_name);
-                    server_response->role = cliente_request->role;
-                    server_response->channel = cliente_request->channel;
 
                     //txt
                     ssize_t size = strlen(cliente_request->cmd);
@@ -291,7 +288,7 @@ int main(int argc, char const *argv[])
                       memcpy(&buffer, clientToBuffer(cliente_request), 512);
                       send(i, buffer, BUFSIZE, 0 );
                     }
-                    else if(!invalidCharacters(txt))
+                    else if(validCharacters(txt))
                     {
                       strcpy(cliente_request->cmd,"RPLY 003 - Erro: Nome pedido não válido\0");
                       memcpy(&buffer, clientToBuffer(cliente_request), 512);
@@ -305,10 +302,77 @@ int main(int argc, char const *argv[])
                     }
                     
                     
-                    
+      
 
 
+                }
+                else if (!strncmp(cliente_request->cmd,"LIST",4))
+                {
+                  strcpy(cliente_request->cmd,"LIST [1,2,3,4]\0");
+                  memcpy(&buffer, clientToBuffer(cliente_request), 512);
+                  send(i, buffer, BUFSIZE, 0 );
 
+                }else if (!strncmp(cliente_request->cmd,"JOIN",4))
+                {
+                  ssize_t size = strlen(cliente_request->cmd);
+                  char txt[21];
+                  memcpy( txt, &cliente_request->cmd,size);
+                  txt[size] = '\0';
+                  memcpy(txt, txt+5,size-5);
+                  memcpy(&txt[size-5],"\0",1);
+
+                  cliente_request->channel = atoi(txt);
+                  printf("n: %d\n",cliente_request->channel);
+
+                  if (cliente_request->role == 0)
+                  {
+                    strcpy(cliente_request->cmd,"RPLY 303 - Erro. Não pode mudar para o canal\0");
+                    memcpy(&buffer, clientToBuffer(cliente_request), 512);
+                    send(i, buffer, BUFSIZE, 0 );
+                  }
+                  else if (cliente_request->channel < 0 && cliente_request->channel > 4)
+                  {
+                    strcpy(cliente_request->cmd,"RPLY 302 – Erro. canal não existente\0");
+                    memcpy(&buffer, clientToBuffer(cliente_request), 512);
+                    send(i, buffer, BUFSIZE, 0 );
+                  }
+                  else
+                  {
+
+                    //mudar na tabela de utilizadores ativos
+
+                    //mensagem global MSSG "server :> entrou neste canal"
+                    // ou MSSG "server :> deixou este canal"
+
+                    strcpy(cliente_request->cmd,"RPLY 301 - Mudança de canal com sucesso\0");
+                    memcpy(&buffer, clientToBuffer(cliente_request), 512);
+                    send(i, buffer, BUFSIZE, 0 );
+                  }
+                  
+        
+                }
+                else if (!strncmp(cliente_request->cmd,"PASS",4))
+                {
+
+                }
+                else if (!strncmp(cliente_request->cmd,"WHOS",4))
+                {
+
+                }
+                else if (!strncmp(cliente_request->cmd,"KICK",4))
+                {
+
+                }
+                else if (!strncmp(cliente_request->cmd,"REGS",4))
+                {
+
+                }
+                else if (!strncmp(cliente_request->cmd,"OPER",4))
+                {
+
+                }
+                else if (!strncmp(cliente_request->cmd,"QUIT",4))
+                {
 
                 }
                 else
@@ -318,7 +382,7 @@ int main(int argc, char const *argv[])
                   memcpy(&buffer, clientToBuffer(cliente_request), 512);
                   send(i, buffer, BUFSIZE, 0 );
                 }
-
+                free(server_response);
           }
         }
       }
