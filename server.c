@@ -7,6 +7,8 @@
 #include <time.h>        
 #include <stdbool.h>
 
+#include <ListaDB.c>
+
 #define PORT 5555
 #define BUFSIZE 512
 
@@ -19,13 +21,7 @@ typedef struct client{
 
 }client_t;
 
-typedef struct client_R{
-	
-	char nick_name[21]; //21 bytes; começa em 485 e termina em 506
-	int channel; //4bytes; começa em 507 e termina em 511
-	bool role;  //1 Byte; 512;
 
-}client_R_t;
 
 bool validCharacters(char *name) {
   
@@ -88,25 +84,36 @@ int main(int argc, char const *argv[])
   char buffer[BUFSIZE];
   int bytes;
 
-  //utilizadores
-  int size = 2;
-  client_R_t server_DB[20];
+  //utilizadores registados
+    int size_DB = 2;
+    client_R_t server_DB[20];
 
-  //admin
-  client_R_t *admin = malloc(sizeof(client_R_t));
-  strcpy(admin->nick_name,"admin\0");
-  admin->role = 2;
-  admin->channel = 0;
-  server_DB[0] = *admin;
+    //admin
+    client_R_t *admin = malloc(sizeof(client_R_t));
+    strcpy(admin->nick_name,"admin\0");
+    strcpy(admin->pass,"1234\0"); // the irony...
+    admin->role = 2;
+    admin->channel = 0;
+    server_DB[0] = *admin;
 
-  //user
-  client_R_t *user = malloc(sizeof(client_R_t));
-  strcpy(admin->nick_name,"joao\0");
-  admin->role = 1;
-  admin->channel = 0;
-  server_DB[1] = *user;
+    //user
+    client_R_t *user = malloc(sizeof(client_R_t));
+    strcpy(admin->nick_name,"joao\0");
+    strcpy(admin->pass,"1234\0");
+    admin->role = 1;
+    admin->channel = 0;
+    server_DB[1] = *user;
+
+  //utilizadores ativos
+
 
   int server_channels[4] = {1,2,3,4};
+
+  void insert_user()
+  {
+
+  }
+
 
   // Creating socket file descriptor 
   if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) { 
