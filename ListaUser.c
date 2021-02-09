@@ -5,7 +5,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-//#include <server.c>
 
 typedef struct user{
 	
@@ -16,19 +15,19 @@ typedef struct user{
 
 }user_t;
 
-typedef struct node {
+typedef struct nodeUser {
     
     user_t user;
-    struct node *next;
+    struct nodeUser *next;
 
-} nodeDB_t;
+} nodeUser_t;
 
-typedef struct listDB {
+typedef struct listUser {
    
-    nodeDB_t *header;
+    nodeUser_t *header;
     int size;
 
-}listDB_t;
+}listUser_t;
 
 user_t *newUser()
 {
@@ -36,38 +35,40 @@ user_t *newUser()
     return new;
 }
 
-nodeDB_t *newNodeDB()
+nodeUser_t *newNodeUser()
 {
-    nodeDB_t *new = malloc(sizeof(nodeDB_t));
+    nodeUser_t *new = malloc(sizeof(nodeUser_t));
     new->next = NULL;
     return new;
 }
 
-listDB_t *newListDB()
+listUser_t *newListUser()
 {
-    listDB_t *new = malloc(sizeof(listDB_t));
-    new->header = newNodeDB();
+    listUser_t *new = malloc(sizeof(listUser_t));
+    new->header = newNodeUser();
     new->size = 0;
     return new;
 }
 
 
 //Escreve na consola a informacao de um dado pais
-void listDB_print(listDB_t *list){
+void listUser_print(listUser_t *list){
     
-    nodeDB_t *current = newNodeDB();
+    nodeUser_t *current = newNodeUser();
     current = list->header->next;
     while (current!=NULL)
     {
         printf("\"%s\", ",current->user.nick_name);
         current=current->next;
     }
+    printf("\n");
+
 }
 
-void listDB_insert(listDB_t *list, user_t *user){
+void listUser_insert(listUser_t *list, user_t *user){
   
 
-    nodeDB_t *new = newNodeDB();
+    nodeUser_t *new = newNodeUser();
     new->user = *user;
     new->next=list->header->next;
     list->header->next=new;
@@ -76,9 +77,9 @@ void listDB_insert(listDB_t *list, user_t *user){
     
 }
 
-user_t *listDB_find(listDB_t *list, user_t *user)
+user_t *listUser_find(listUser_t *list, user_t *user)
 {
-    nodeDB_t *current = list->header->next;
+    nodeUser_t *current = list->header->next;
 
     if (current==NULL)
     {
@@ -91,7 +92,6 @@ user_t *listDB_find(listDB_t *list, user_t *user)
         {
             user_t *found_user = newUser();
             strcpy(found_user->nick_name,user->nick_name);
-            found_user->sock = user->sock;
             found_user->role = user->role;
             found_user->channel = user->channel;
 
@@ -104,15 +104,49 @@ user_t *listDB_find(listDB_t *list, user_t *user)
     return NULL;
 }
 
+user_t *listUser_remove(listUser_t *list, user_t *user)
+{
+    nodeUser_t *prev = list->header;
+    nodeUser_t *current = list->header->next;
+
+    if (current==NULL)
+    {
+        return NULL;
+    }
+
+    while (current!=NULL)
+    {
+        if (strcmp(current->user.nick_name,user->nick_name) == 0)
+        {
+            user_t *client_R = newUser();
+            strcpy(client_R->nick_name,user->nick_name);
+            client_R->sock = user->sock;
+            client_R->role = user->role;
+            client_R->channel = user->channel;
+
+            prev->next=current->next;
+            current=prev;
+
+            return client_R;
+        }
+        prev=prev->next;
+        current=current->next;
+    }
+
+
+    return NULL;
+}
+/*
 int main(int argc, char const *argv[])
 {
     user_t *oi = newUser();
     strcpy(oi->nick_name,"jonny");
-    listDB_t *lista = newListDB(); 
-    listDB_insert(lista,oi);
+    listUser_t *lista = newListUser(); 
+    listUser_insert(lista,oi);
 
-    user_t *found = listDB_find(lista,oi);
+    user_t *found = listUser_find(lista,oi);
     printf("%s\n",found->nick_name);
-    listDB_print(lista);
+    listUser_print(lista);
     return 0;
 }
+*/

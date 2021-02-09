@@ -7,7 +7,8 @@
 #include <time.h>        
 #include <stdbool.h>
 
-#include <ListaDB.c>
+#include "ListaClient.h"
+#include "ListaUser.h"
 
 #define PORT 5555
 #define BUFSIZE 512
@@ -20,8 +21,6 @@ typedef struct client{
 	bool role;  //1 Byte; 512;
 
 }client_t;
-
-
 
 bool validCharacters(char *name) {
   
@@ -69,6 +68,12 @@ char *clientToBuffer(client_t *n)
   return buf;
 } 
 
+/*
+bool valideUser()
+{
+
+}
+*/
 
 int main(int argc, char const *argv[]) 
 {
@@ -84,35 +89,31 @@ int main(int argc, char const *argv[])
   char buffer[BUFSIZE];
   int bytes;
 
-  //utilizadores registados
-    int size_DB = 2;
-    client_R_t server_DB[20];
 
+
+  //utilizadores registados
+    listClient_R_t *database = newListClient();
     //admin
     client_R_t *admin = malloc(sizeof(client_R_t));
     strcpy(admin->nick_name,"admin\0");
     strcpy(admin->pass,"1234\0"); // the irony...
     admin->role = 2;
     admin->channel = 0;
-    server_DB[0] = *admin;
+    listClient_insert(database,admin);
 
     //user
     client_R_t *user = malloc(sizeof(client_R_t));
-    strcpy(admin->nick_name,"joao\0");
-    strcpy(admin->pass,"1234\0");
-    admin->role = 1;
-    admin->channel = 0;
-    server_DB[1] = *user;
-
+    strcpy(user->nick_name,"joao\0");
+    strcpy(user->pass,"1234\0");
+    user->role = 1;
+    user->channel = 0;
+    listClient_insert(database,user);
+    listClient_print(database);
+    
+    listUser_t *active_users = newListUser();
+    listUser_print(active_users);
   //utilizadores ativos
 
-
-  int server_channels[4] = {1,2,3,4};
-
-  void insert_user()
-  {
-
-  }
 
 
   // Creating socket file descriptor 
@@ -177,10 +178,16 @@ int main(int argc, char const *argv[])
           client_t *cliente = malloc(sizeof(client_t));
           strcpy(cliente->nick_name,"Anonimo\0");
           strcpy(cliente->cmd,"\0");
-          cliente->role = 0;
+          cliente->role = 1;
           cliente->channel = 0;
-
-          //print_client(cliente);
+          
+          user_t *new_user = newUser();
+          new_user->sock = new_socket;
+          strcpy(new_user->nick_name,"Anonimo\0");
+          new_user->role = 0;
+          new_user->channel = 0;          
+          
+          listUser_insert(active_users,new_user);
           memcpy(&buffer, clientToBuffer(cliente), 512);
           //cliente = bufferToClient(buffer);
           //print_client(cliente);
@@ -215,6 +222,7 @@ int main(int argc, char const *argv[])
           printf("Client request:");
           print_client(cliente_request);
 
+          //valideUser();
 
           if ( bytes == 0 ) { // client disconnected, too bad...
             printf("Client disconnected.\n");
@@ -262,11 +270,26 @@ int main(int argc, char const *argv[])
                   }
                   else
                   {
-
-
+                    ssize_t size = strlen(cliente_request->cmd);
+                    char txt[21];
+                    memcpy( txt, &cliente_request->cmd,size);
+                    txt[size] = '\0';
+                    memcpy(txt, txt+5,size-5);
+                    memcpy(&txt[size-5],"\0",1);
+                    printf("txt:%s n:%ld\n",txt,strlen(txt));
+ 
                     strcpy(server_response->cmd,cliente_request->cmd);
-                    //loop que envia o server_response a cada um dos sockets 
+ 
+                    nodeUser_t *current = active_users->header;
 
+                    while (current!=NULL)
+                    {
+                      strcpy(cliente_request->cmd,"MSSG\0");
+                      memcpy(&buffer, clientToBuffer(cliente_request), 512);
+                      send(current->user.sock, buffer, BUFSIZE, 0 );
+                      current = current->next;
+                    }
+                    
 
                     strcpy(cliente_request->cmd,"RPLY 101 - mensagem enviada com sucesso.\0");
                     memcpy(&buffer, clientToBuffer(cliente_request), 512);
@@ -286,16 +309,24 @@ int main(int argc, char const *argv[])
                     txt[size] = '\0';
                     memcpy(txt, txt+5,size-5);
                     memcpy(&txt[size-5],"\0",1);
-                    printf("txt: %s\n",txt);
+                    printf("txt:%s n:%ld\n",txt,strlen(txt));
 
-                    //printf("inv: %d\n",invalidCharacters(txt));
-                    if(strlen(txt)>=21)
+                    //printf("inv: %d\n",validCharacters(txt));
+                    
+                    
+                    if(strlen(txt)==0)
+                    {
+                      strcpy(cliente_request->cmd,"RPLY 002 - Erro: Falta introdução do nome.\0");
+                      memcpy(&buffer, clientToBuffer(cliente_request), 512);
+                      send(i, buffer, BUFSIZE, 0 );
+                    }
+                    else if(strlen(txt)>=21)
                     {
                       strcpy(cliente_request->cmd,"RPLY 003 - Erro: Nome pedido não válido\0");
                       memcpy(&buffer, clientToBuffer(cliente_request), 512);
                       send(i, buffer, BUFSIZE, 0 );
                     }
-                    else if(validCharacters(txt))
+                    else if(!validCharacters(txt))
                     {
                       strcpy(cliente_request->cmd,"RPLY 003 - Erro: Nome pedido não válido\0");
                       memcpy(&buffer, clientToBuffer(cliente_request), 512);
@@ -303,14 +334,51 @@ int main(int argc, char const *argv[])
                     }
                     else
                     {
-                      strcpy(cliente_request->cmd,"Nome atribuído com sucesso\0");
-                      memcpy(&buffer, clientToBuffer(cliente_request), 512);
-                      send(i, buffer, BUFSIZE, 0 );
+                      //verificar se o nome é usado
+                      client_R_t *new = newClient();
+                      strcpy(new->nick_name,txt);
+                      new = listClient_find(database,new);
+
+                      user_t *new1 = newUser();
+                      strcpy(new1->nick_name,txt);
+                      new1 = listUser_find(active_users,new1);
+                      
+                      listUser_print(active_users);
+                      //printf("new:%s new1:%s request:%s\n",new->nick_name,new1->nick_name,txt);
+
+                      if (new==NULL && new1==NULL)
+                      {
+                        //mudar na tabela de utilizadores ativos
+                        user_t *new_user = newUser();
+                        strcpy(new_user->nick_name,cliente_request->nick_name);
+                        new_user = listUser_remove(active_users,new_user);
+                        strcpy(new_user->nick_name,txt);
+                        listUser_insert(active_users,new_user);
+
+                        listUser_print(active_users);
+
+                        //MSSG "server :> novo utilizador "se for um utilizador novo, ou
+
+                        //MSSG "server :> <nome_antigo> mudou o seu nome para " se já tinha nome atribuído.
+
+                        strcpy(cliente_request->nick_name,txt);
+                        strcpy(cliente_request->cmd,"RPLY 001 - Nome atribuído com sucesso\0");
+                        memcpy(&buffer, clientToBuffer(cliente_request), 512);
+                        send(i, buffer, BUFSIZE, 0 );
+                      
+                      }
+                      else 
+                      {
+
+                        strcpy(cliente_request->cmd,"RPLY 004 - Erro: nome já em uso (num outro utilizador registado ou em uso por um utilizador não registado, e o comando não tem qualquer efeito\0");
+                        memcpy(&buffer, clientToBuffer(cliente_request), 512);
+                        send(i, buffer, BUFSIZE, 0 );
+                      }
+                      
+
                     }
                     
-                    
-      
-
+        
 
                 }
                 else if (!strncmp(cliente_request->cmd,"LIST",4))
@@ -347,8 +415,17 @@ int main(int argc, char const *argv[])
                   {
 
                     //mudar na tabela de utilizadores ativos
+                    user_t *new_user = newUser();
+                    strcpy(new_user->nick_name,cliente_request->nick_name);
+                    new_user = listUser_remove(active_users,new_user);
+                    new_user->channel = cliente_request->channel;
+                    listUser_insert(active_users,new_user);
 
+                    listUser_print(active_users);
+                    
                     //mensagem global MSSG "server :> entrou neste canal"
+                    
+
                     // ou MSSG "server :> deixou este canal"
 
                     strcpy(cliente_request->cmd,"RPLY 301 - Mudança de canal com sucesso\0");
