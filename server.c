@@ -201,11 +201,11 @@ int main(int argc, char const *argv[])
             
             if (current->user.sock!=i  && current->user.channel==new_user->channel)
             {
-              printf("current: %s\n",current->user.nick_name);
+              //printf("current: %s\n",current->user.nick_name);
               strcpy(new_user->nick_name,current->user.nick_name);
               new_user->channel = current->user.channel;
               new_user->role = current->user.role;
-              printf("sock:%d | i:%d\n",current->user.sock,i);
+              //printf("sock:%d | i:%d\n",current->user.sock,i);
 
               memcpy(&buffer, clientToBuffer(cliente), 512);
               send(current->user.sock, buffer, BUFSIZE, 0 );
@@ -249,7 +249,7 @@ int main(int argc, char const *argv[])
           client_t *cliente_request = bufferToClient(buffer);
           printf("Online users: ");
           listUser_print(active_users);
-          printf("Client request:");
+          printf("Client request: ");
           print_client(cliente_request);
 
           //valideUser();
@@ -306,7 +306,7 @@ int main(int argc, char const *argv[])
                     txt[size] = '\0';
                     memcpy(txt, txt+5,size-5);
                     memcpy(&txt[size-5],"\0",1);
-                    printf("txt:%s n:%ld\n",txt,strlen(txt));
+                    //printf("txt:%s n:%ld\n",txt,strlen(txt));
  
                     strcpy(server_response->cmd,cliente_request->cmd);
  
@@ -320,7 +320,7 @@ int main(int argc, char const *argv[])
                     strcpy(server_response->cmd,msg);
                    
 
-                    print_client(server_response);
+                    //print_client(server_response);
 
                     //enviar a todos
                     nodeUser_t *current = active_users->header->next;
@@ -331,11 +331,11 @@ int main(int argc, char const *argv[])
                       
                       if (strcmp(current->user.nick_name,cliente_request->nick_name)!=0 && current->user.channel==cliente_request->channel)
                       {
-                        printf("current: %s\n",current->user.nick_name);
+                        //printf("current: %s\n",current->user.nick_name);
                         strcpy(server_response->nick_name,current->user.nick_name);
                         server_response->channel = current->user.channel;
                         server_response->role = current->user.role;
-                        printf("sock:%d | i:%d\n",current->user.sock,i);
+                        //printf("sock:%d | i:%d\n",current->user.sock,i);
   
                         memcpy(&buffer, clientToBuffer(server_response), 512);
                         send(current->user.sock, buffer, BUFSIZE, 0 );
@@ -442,11 +442,11 @@ int main(int argc, char const *argv[])
                           //printf("%s %s\n",current->user.nick_name,txt);
                           if (strcmp(current->user.nick_name,txt)!=0 && current->user.channel==cliente_request->channel)
                           {
-                            printf("current: %s\n",current->user.nick_name);
+                            //printf("current: %s\n",current->user.nick_name);
                             strcpy(server_response->nick_name,current->user.nick_name);
                             server_response->channel = current->user.channel;
                             server_response->role = current->user.role;
-                            printf("sock:%d | i:%d\n",current->user.sock,i);
+                            //printf("sock:%d | i:%d\n",current->user.sock,i);
       
                             memcpy(&buffer, clientToBuffer(server_response), 512);
                             send(current->user.sock, buffer, BUFSIZE, 0 );
@@ -482,7 +482,8 @@ int main(int argc, char const *argv[])
                   memcpy(&buffer, clientToBuffer(cliente_request), 512);
                   send(i, buffer, BUFSIZE, 0 );
 
-                }else if (!strncmp(cliente_request->cmd,"JOIN",4))
+                }
+                else if (!strncmp(cliente_request->cmd,"JOIN",4))
                 {
                   ssize_t size = strlen(cliente_request->cmd);
                   char txt[21];
@@ -491,6 +492,7 @@ int main(int argc, char const *argv[])
                   memcpy(txt, txt+5,size-5);
                   memcpy(&txt[size-5],"\0",1);
 
+                  int prev = cliente_request->channel;
                   cliente_request->channel = atoi(txt);
                   printf("n: %d\n",cliente_request->channel);
 
@@ -508,23 +510,87 @@ int main(int argc, char const *argv[])
                   }
                   else
                   {
+                    printf("---------------------\n");
+                    print_client(server_response);
+                    listUser_print(active_users);
 
                     //mudar na tabela de utilizadores ativos
                     user_t *new_user = newUser();
                     strcpy(new_user->nick_name,cliente_request->nick_name);
                     new_user = listUser_remove(active_users,new_user,i);
-                    new_user->channel = cliente_request->channel;
-                    listUser_insert(active_users,new_user);
-
-                    listUser_print(active_users);
                     
                     //mensagem global MSSG "server :> entrou neste canal"
-                    
 
+                    //criar a mssg
+                    char msg[485] = "";
+                    strcat(msg,"MSSG ");
+                    strcat(msg,cliente_request->nick_name);
+                    strcat(msg," :> deixou este canal");
+                   
+
+
+                    //enviar a todos
+                    nodeUser_t *current = active_users->header->next;
+
+                    while (current!=NULL)
+                    {
+                      printf("current: %s,channel: %d==%d \n",current->user.nick_name, current->user.channel, cliente_request->channel);
+                      if (current->user.channel==prev)
+                      {
+                        //printf("current: %s\n",current->user.nick_name);
+                        strcpy(server_response->nick_name,current->user.nick_name);
+                        server_response->channel = current->user.channel;
+                        server_response->role = current->user.role;
+                        strcpy(server_response->cmd,msg);
+
+                        memcpy(&buffer, clientToBuffer(server_response), 512);
+                        send(current->user.sock, buffer, BUFSIZE, 0 );
+                      }
+                      current = current->next;
+
+                    }
+
+                    //listUser_print(active_users);
+
+
+                    //criar a mssg
+                    strcpy(msg,"");
+                    strcat(msg,"MSSG ");
+                    strcat(msg,cliente_request->nick_name);
+                    strcat(msg," :> entrou neste canal");
+                   
                     // ou MSSG "server :> deixou este canal"
 
-                    strcpy(cliente_request->cmd,"RPLY 301 - Mudança de canal com sucesso\0");
-                    memcpy(&buffer, clientToBuffer(cliente_request), 512);
+                    //enviar a todos
+                    current = active_users->header->next;
+
+                    while (current!=NULL)
+                    {
+                      printf("current: %s,channel: %d==%d \n",current->user.nick_name, current->user.channel, cliente_request->channel);
+                      if (strcmp(current->user.nick_name,cliente_request->nick_name)!=0 && current->user.channel==cliente_request->channel)
+                      {
+                        //printf("current: %s\n",current->user.nick_name);
+                        strcpy(server_response->nick_name,current->user.nick_name);
+                        server_response->channel = current->user.channel;
+                        server_response->role = current->user.role;
+                        strcpy(server_response->cmd,msg);
+                        //printf("sock:%d | i:%d\n",current->user.sock,i);
+  
+                        memcpy(&buffer, clientToBuffer(server_response), 512);
+                        send(current->user.sock, buffer, BUFSIZE, 0 );
+                      }
+                      current = current->next;
+
+                    }
+                    
+                    new_user->sock = i;
+                    new_user->channel = cliente_request->channel;
+                    new_user->role = cliente_request->role;
+                    listUser_insert(active_users,new_user);
+                    
+
+                    strcpy(server_response->cmd,"RPLY 301 - Mudança de canal com sucesso\0");
+                    memcpy(&buffer, clientToBuffer(server_response), 512);
                     send(i, buffer, BUFSIZE, 0 );
                   }
                   

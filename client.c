@@ -116,6 +116,74 @@ int main()
 			server_response = bufferToClient(buffer);
 			printf("MSSG: ");
 			print_client(server_response);
+
+			if (!strncmp(server_response->cmd,"RPLY",4))
+			{
+				//cod
+				ssize_t size = strlen(server_response->cmd);
+				char cod[size];
+				memcpy( cod, &server_response->cmd,size);
+				cod[size] = '\0';
+				memcpy(cod, cod+5,size-4);
+				memcpy(&cod[size-4],"\0",1);
+				printf("cod:%s n:%ld\n",cod,strlen(cod));
+
+				if (!strncmp(cod,"001",3))
+				{
+					//output
+					size = strlen(server_response->cmd);
+					char output[size];
+					memcpy( output, &server_response->cmd,size);
+					output[size] = '\0';
+					memcpy(output, output+9,size-4);
+					memcpy(&output[size-4],"\0",1);
+					//printf("output:%s n:%ld\n",output,strlen(output));
+
+					//mudar os dados
+					strcpy(cliente->nick_name,server_response->nick_name);
+					cliente->role = server_response->role;
+					cliente->channel = server_response->channel;
+					strcpy(cliente->cmd,"\0");
+
+				}
+
+				if (!strncmp(cod,"301",3))
+				{
+					//output
+					size = strlen(server_response->cmd);
+					char output[size];
+					memcpy( output, &server_response->cmd,size);
+					output[size] = '\0';
+					memcpy(output, output+9,size-4);
+					memcpy(&output[size-4],"\0",1);
+					//printf("output:%s n:%ld\n",output,strlen(output));
+
+					//mudar os dados
+					strcpy(cliente->nick_name,server_response->nick_name);
+					cliente->role = server_response->role;
+					cliente->channel = server_response->channel;
+					strcpy(cliente->cmd,"\0");
+
+				}
+				//cliente->nick_name
+
+
+			}
+
+			if (!strncmp(server_response->cmd,"MSSG",4))
+			{
+					//cod
+				ssize_t size = strlen(server_response->cmd);
+				char cod[size];
+				memcpy( cod, &server_response->cmd,size);
+				cod[size] = '\0';
+				memcpy(cod, cod+5,size-4);
+				memcpy(&cod[size-4],"\0",1);
+				printf("cod:%s n:%ld\n",cod,strlen(cod));
+
+				printf("%s\n",cod);
+
+			}
 		}
 		else
 		{
@@ -168,7 +236,7 @@ int main()
 				cod[size] = '\0';
 				memcpy(cod, cod+5,size-4);
 				memcpy(&cod[size-4],"\0",1);
-				//printf("cod:%s n:%ld\n",cod,strlen(cod));
+				printf("cod:%s n:%ld\n",cod,strlen(cod));
 
 				if (!strncmp(cod,"001",3))
 				{
@@ -188,14 +256,66 @@ int main()
 					strcpy(cliente->cmd,"\0");
 
 				}
-	
+
+				if (!strncmp(cod,"301",3))
+				{
+					//output
+					size = strlen(server_response->cmd);
+					char output[size];
+					memcpy( output, &server_response->cmd,size);
+					output[size] = '\0';
+					memcpy(output, output+9,size-4);
+					memcpy(&output[size-4],"\0",1);
+					//printf("output:%s n:%ld\n",output,strlen(output));
+
+					//mudar os dados
+					strcpy(cliente->nick_name,server_response->nick_name);
+					cliente->role = server_response->role;
+					cliente->channel = server_response->channel;
+					strcpy(cliente->cmd,"\0");
+
+				}
 				//cliente->nick_name
+
+
 			}
+
+			if (!strncmp(server_response->cmd,"MSSG",4))
+			{
+				//cod
+				ssize_t size = strlen(server_response->cmd);
+				char cod[size];
+				memcpy( cod, &server_response->cmd,size);
+				cod[size] = '\0';
+				memcpy(cod, cod+5,size-4);
+				memcpy(&cod[size-4],"\0",1);
+				//printf("cod:%s n:%ld\n",cod,strlen(cod));
+
+				strcpy(cliente->nick_name,server_response->nick_name);
+				cliente->role = server_response->role;
+				cliente->channel = server_response->channel;
+				
+				printf("%s\n",cod);
+
+			}
+
+
+
+
+
+
+
+
+
+
+			
 		}
 		
 		
 		
 	}
+
+	
 
 	return 0;
 }
