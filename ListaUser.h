@@ -34,12 +34,13 @@ struct user *newUser();
 struct listUser *newNodeUser();
 struct listUser *newListUser();
 
+void print_user(user_t *n);
 
-//Escreve na consola a informacao de um dado pais
+user_t *listUser_find_name(listUser_t *list, user_t *user);
 void listUser_print(listUser_t *list);
 void listUser_insert(listUser_t *list, user_t *user);
-struct user *listUser_find(listUser_t *list, user_t *user);
-struct user *listUser_remove(listUser_t *list, user_t *user);
+struct user *listUser_find(listUser_t *list, user_t *user, int i);
+struct user *listUser_remove(listUser_t *list, user_t *user, int i);
 
 #endif
 /*

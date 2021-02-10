@@ -41,6 +41,7 @@ void print_client(client_t *n)
 							,n->nick_name,n->role,n->channel,n->cmd);
 }
 
+
 client_t *bufferToClient(char buff[BUFSIZE])
 {
   client_t *new_client = malloc(sizeof(client_t));;
@@ -184,9 +185,12 @@ int main(int argc, char const *argv[])
           user_t *new_user = newUser();
           new_user->sock = new_socket;
           strcpy(new_user->nick_name,"Anonimo\0");
-          new_user->role = 0;
+          new_user->role = 1;
           new_user->channel = 0;          
           
+          printf("new_socket:%d\n",new_user->sock);
+
+
           listUser_insert(active_users,new_user);
           memcpy(&buffer, clientToBuffer(cliente), 512);
           //cliente = bufferToClient(buffer);
@@ -219,6 +223,8 @@ int main(int argc, char const *argv[])
           //printf("----------á espera de data-----------\n");
           bytes = recv(i, buffer, BUFSIZE, 0);
           client_t *cliente_request = bufferToClient(buffer);
+          printf("Online users: ");
+          listUser_print(active_users);
           printf("Client request:");
           print_client(cliente_request);
 
@@ -280,14 +286,38 @@ int main(int argc, char const *argv[])
  
                     strcpy(server_response->cmd,cliente_request->cmd);
  
-                    nodeUser_t *current = active_users->header;
+
+                    //criar a mssg
+                    char msg[485] = "";
+                    strcat(msg,"MSSG ");
+                    strcat(msg,cliente_request->nick_name);
+                    strcat(msg," ");
+                    strcat(msg,txt);
+                    strcpy(server_response->cmd,msg);
+                   
+
+                    print_client(server_response);
+
+                    //enviar a todos
+                    nodeUser_t *current = active_users->header->next;
+                    listUser_print(active_users);
 
                     while (current!=NULL)
                     {
-                      strcpy(cliente_request->cmd,"MSSG\0");
-                      memcpy(&buffer, clientToBuffer(cliente_request), 512);
-                      send(current->user.sock, buffer, BUFSIZE, 0 );
+                      
+                      if (strcmp(current->user.nick_name,cliente_request->nick_name)!=0 && current->user.channel==cliente_request->channel)
+                      {
+                        printf("current: %s\n",current->user.nick_name);
+                        strcpy(server_response->nick_name,current->user.nick_name);
+                        server_response->channel = current->user.channel;
+                        server_response->role = current->user.role;
+                        printf("sock:%d | i:%d\n",current->user.sock,i);
+  
+                        memcpy(&buffer, clientToBuffer(server_response), 512);
+                        send(current->user.sock, buffer, BUFSIZE, 0 );
+                      }
                       current = current->next;
+
                     }
                     
 
@@ -341,8 +371,12 @@ int main(int argc, char const *argv[])
 
                       user_t *new1 = newUser();
                       strcpy(new1->nick_name,txt);
-                      new1 = listUser_find(active_users,new1);
+                      //printf("find i:%d\n",i);
+                      new1 = listUser_find_name(active_users,new1);
                       
+
+                      
+
                       listUser_print(active_users);
                       //printf("new:%s new1:%s request:%s\n",new->nick_name,new1->nick_name,txt);
 
@@ -351,14 +385,41 @@ int main(int argc, char const *argv[])
                         //mudar na tabela de utilizadores ativos
                         user_t *new_user = newUser();
                         strcpy(new_user->nick_name,cliente_request->nick_name);
-                        new_user = listUser_remove(active_users,new_user);
+                        new_user = listUser_remove(active_users,new_user,i);
+                        //print_user(new_user);
+                        new_user->sock = i;
+                        new_user->role = cliente_request->role;
+                        new_user->channel = cliente_request->channel;
                         strcpy(new_user->nick_name,txt);
+
                         listUser_insert(active_users,new_user);
 
                         listUser_print(active_users);
 
                         //MSSG "server :> novo utilizador "se for um utilizador novo, ou
+                        
+                        
+                        //enviar a todos
+                        nodeUser_t *current = active_users->header->next;
+                        listUser_print(active_users);
 
+                        while (current!=NULL)
+                        {
+                          
+                          if (strcmp(current->user.nick_name,cliente_request->nick_name)!=0 && current->user.channel==cliente_request->channel)
+                          {
+                            printf("current: %s\n",current->user.nick_name);
+                            strcpy(server_response->nick_name,current->user.nick_name);
+                            server_response->channel = current->user.channel;
+                            server_response->role = current->user.role;
+                            printf("sock:%d | i:%d\n",current->user.sock,i);
+      
+                            memcpy(&buffer, clientToBuffer(server_response), 512);
+                            send(current->user.sock, buffer, BUFSIZE, 0 );
+                          }
+                          current = current->next;
+
+                        }
                         //MSSG "server :> <nome_antigo> mudou o seu nome para " se já tinha nome atribuído.
 
                         strcpy(cliente_request->nick_name,txt);
@@ -417,7 +478,7 @@ int main(int argc, char const *argv[])
                     //mudar na tabela de utilizadores ativos
                     user_t *new_user = newUser();
                     strcpy(new_user->nick_name,cliente_request->nick_name);
-                    new_user = listUser_remove(active_users,new_user);
+                    new_user = listUser_remove(active_users,new_user,i);
                     new_user->channel = cliente_request->channel;
                     listUser_insert(active_users,new_user);
 

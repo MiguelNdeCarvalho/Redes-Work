@@ -98,90 +98,103 @@ int main()
 		char str[485]; 
 		printf("\nCONSOLE:");
 		fgets(str,485,stdin); 
-		printf("%s", str);
 		strcpy(cliente->cmd,str); 
 
 		cliente->cmd[strlen(cliente->cmd)-1]='\0';
-
-		//cliente->cmd
-		printf("\n");
-
-		//len()>
 		
-		if (!strcmp(cliente->cmd,"QUIT")){
-			printf("\nCLIENT CLOSED\n");
-			close(sockfd);
-			return 0;
-		}
-
-        memcpy(&buffer, clientToBuffer(cliente), 512);
-		
-		size_t total = 0;
-		int len = MAXDATASIZE;
-
-		while ( total != len ) {
-			if ( total == MAXDATASIZE ) break; 
-			ssize_t nb = send( sockfd, buffer + total, len - total, 0 );
-			total += nb;
-		}
-
-		//printf( "seded total of %zu bytes\n", total );
-
-		printf("I sent this: ");
-		print_client(cliente);
-
-		bzero(buffer, MAXDATASIZE);
-		
-		
-		bzero(buffer, MAXDATASIZE);
-		//int numbytes=recv(sockfd, msg_received, MAXDATASIZE-1, 0);
-		total = 0; /* everything received */
-		while ( 1 ) {
-			if ( total == MAXDATASIZE ) break; /* got end-of-stream */
-			ssize_t nb = recv( sockfd, buffer, MAXDATASIZE, 0 );
-			if ( nb == -1 ) printf( "recv failed" );
-			total += nb;
-		}
-
-		client_t *server_response = malloc(sizeof(client_t));
-		server_response = bufferToClient(buffer);
-		printf("I received this: ");
-		print_client(server_response);
-	
-		if (!strncmp(server_response->cmd,"RPLY",4))
+		if(!strcmp(cliente->cmd,"recv"))
 		{
-			//cod
-			ssize_t size = strlen(server_response->cmd);
-			char cod[size];
-			memcpy( cod, &server_response->cmd,size);
-			cod[size] = '\0';
-			memcpy(cod, cod+5,size-4);
-			memcpy(&cod[size-4],"\0",1);
-			//printf("cod:%s n:%ld\n",cod,strlen(cod));
-
-			if (!strncmp(cod,"001",3))
-			{
-				//output
-				size = strlen(server_response->cmd);
-				char output[size];
-				memcpy( output, &server_response->cmd,size);
-				output[size] = '\0';
-				memcpy(output, output+9,size-4);
-				memcpy(&output[size-4],"\0",1);
-				//printf("output:%s n:%ld\n",output,strlen(output));
-
-				//mudar os dados
-				strcpy(cliente->nick_name,server_response->nick_name);
-				cliente->role = server_response->role;
-				cliente->channel = server_response->channel;
-				strcpy(cliente->cmd,"\0");
-
+			total = 0; /* everything received */
+			while ( 1 ) {
+				if ( total == MAXDATASIZE ) break; /* got end-of-stream */
+				ssize_t nb = recv( sockfd, buffer, MAXDATASIZE, 0 );
+				if ( nb == -1 ) printf( "recv failed" );
+				total += nb;
 			}
-			
 
-			
-			//cliente->nick_name
+			client_t *server_response = malloc(sizeof(client_t));
+			server_response = bufferToClient(buffer);
+			printf("MSSG: ");
+			print_client(server_response);
 		}
+		else
+		{
+			if (!strcmp(cliente->cmd,"quit")){
+				printf("\nCLIENT CLOSED\n");
+				close(sockfd);
+				return 0;
+			}
+
+			memcpy(&buffer, clientToBuffer(cliente), 512);
+			
+			size_t total = 0;
+			int len = MAXDATASIZE;
+
+			while ( total != len ) {
+				if ( total == MAXDATASIZE ) break; 
+				ssize_t nb = send( sockfd, buffer + total, len - total, 0 );
+				total += nb;
+			}
+
+			//printf( "seded total of %zu bytes\n", total );
+
+			printf("I sent this: ");
+			print_client(cliente);
+
+			bzero(buffer, MAXDATASIZE);
+			
+			
+			bzero(buffer, MAXDATASIZE);
+			//int numbytes=recv(sockfd, msg_received, MAXDATASIZE-1, 0);
+			total = 0; /* everything received */
+			while ( 1 ) {
+				if ( total == MAXDATASIZE ) break; /* got end-of-stream */
+				ssize_t nb = recv( sockfd, buffer, MAXDATASIZE, 0 );
+				if ( nb == -1 ) printf( "recv failed" );
+				total += nb;
+			}
+
+			client_t *server_response = malloc(sizeof(client_t));
+			server_response = bufferToClient(buffer);
+			printf("I received this: ");
+			print_client(server_response);
+		
+			if (!strncmp(server_response->cmd,"RPLY",4))
+			{
+				//cod
+				ssize_t size = strlen(server_response->cmd);
+				char cod[size];
+				memcpy( cod, &server_response->cmd,size);
+				cod[size] = '\0';
+				memcpy(cod, cod+5,size-4);
+				memcpy(&cod[size-4],"\0",1);
+				//printf("cod:%s n:%ld\n",cod,strlen(cod));
+
+				if (!strncmp(cod,"001",3))
+				{
+					//output
+					size = strlen(server_response->cmd);
+					char output[size];
+					memcpy( output, &server_response->cmd,size);
+					output[size] = '\0';
+					memcpy(output, output+9,size-4);
+					memcpy(&output[size-4],"\0",1);
+					//printf("output:%s n:%ld\n",output,strlen(output));
+
+					//mudar os dados
+					strcpy(cliente->nick_name,server_response->nick_name);
+					cliente->role = server_response->role;
+					cliente->channel = server_response->channel;
+					strcpy(cliente->cmd,"\0");
+
+				}
+	
+				//cliente->nick_name
+			}
+		}
+		
+		
+		
 	}
 
 	return 0;

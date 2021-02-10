@@ -50,7 +50,11 @@ listUser_t *newListUser()
     return new;
 }
 
-
+void print_user(user_t n)
+{
+	printf("client_user( nick:%s role:%d channel:%d, sock:%d)\n"
+							,n.nick_name,n.role,n.channel,n.sock);
+}
 //Escreve na consola a informacao de um dado pais
 void listUser_print(listUser_t *list){
     
@@ -58,7 +62,7 @@ void listUser_print(listUser_t *list){
     current = list->header->next;
     while (current!=NULL)
     {
-        printf("\"%s\", ",current->user.nick_name);
+        print_user(current->user);
         current=current->next;
     }
     printf("\n");
@@ -77,7 +81,7 @@ void listUser_insert(listUser_t *list, user_t *user){
     
 }
 
-user_t *listUser_find(listUser_t *list, user_t *user)
+user_t *listUser_find(listUser_t *list, user_t *user, int i)
 {
     nodeUser_t *current = list->header->next;
 
@@ -88,7 +92,7 @@ user_t *listUser_find(listUser_t *list, user_t *user)
 
     while (current!=NULL)
     {
-        if (strcmp(current->user.nick_name,user->nick_name) == 0)
+        if (strcmp(current->user.nick_name,user->nick_name) == 0 && current->user.sock==i)
         {
             user_t *found_user = newUser();
             strcpy(found_user->nick_name,user->nick_name);
@@ -104,7 +108,34 @@ user_t *listUser_find(listUser_t *list, user_t *user)
     return NULL;
 }
 
-user_t *listUser_remove(listUser_t *list, user_t *user)
+user_t *listUser_find_name(listUser_t *list, user_t *user)
+{
+    nodeUser_t *current = list->header->next;
+
+    if (current==NULL)
+    {
+        return NULL;
+    }
+
+    while (current!=NULL)
+    {
+        if (strcmp(current->user.nick_name,user->nick_name) == 0 )
+        {
+            user_t *found_user = newUser();
+            strcpy(found_user->nick_name,user->nick_name);
+            found_user->role = user->role;
+            found_user->channel = user->channel;
+
+            return found_user;
+        }
+        current=current->next;
+    }
+
+
+    return NULL;
+}
+
+user_t *listUser_remove(listUser_t *list, user_t *user,int i)
 {
     nodeUser_t *prev = list->header;
     nodeUser_t *current = list->header->next;
@@ -116,7 +147,7 @@ user_t *listUser_remove(listUser_t *list, user_t *user)
 
     while (current!=NULL)
     {
-        if (strcmp(current->user.nick_name,user->nick_name) == 0)
+        if (strcmp(current->user.nick_name,user->nick_name) == 0 && current->user.sock==i)
         {
             user_t *client_R = newUser();
             strcpy(client_R->nick_name,user->nick_name);
