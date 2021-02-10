@@ -178,7 +178,7 @@ int main(int argc, char const *argv[])
           printf("Client connected.\n");
           client_t *cliente = malloc(sizeof(client_t));
           strcpy(cliente->nick_name,"Anonimo\0");
-          strcpy(cliente->cmd,"\0");
+          strcpy(cliente->cmd,"MSSG server :> novo utilizador - Anonimo\0");
           cliente->role = 1;
           cliente->channel = 0;
           
@@ -189,6 +189,30 @@ int main(int argc, char const *argv[])
           new_user->channel = 0;          
           
           printf("new_socket:%d\n",new_user->sock);
+          
+          //MSSG "server :> novo utilizador "se for um utilizador novo, ou
+
+          //enviar a todos
+          nodeUser_t *current = active_users->header->next;
+          listUser_print(active_users);
+
+          while (current!=NULL)
+          {
+            
+            if (current->user.sock!=i  && current->user.channel==new_user->channel)
+            {
+              printf("current: %s\n",current->user.nick_name);
+              strcpy(new_user->nick_name,current->user.nick_name);
+              new_user->channel = current->user.channel;
+              new_user->role = current->user.role;
+              printf("sock:%d | i:%d\n",current->user.sock,i);
+
+              memcpy(&buffer, clientToBuffer(cliente), 512);
+              send(current->user.sock, buffer, BUFSIZE, 0 );
+            }
+            current = current->next;
+
+          }
 
 
           listUser_insert(active_users,new_user);
@@ -291,7 +315,7 @@ int main(int argc, char const *argv[])
                     char msg[485] = "";
                     strcat(msg,"MSSG ");
                     strcat(msg,cliente_request->nick_name);
-                    strcat(msg," ");
+                    strcat(msg," :> ");
                     strcat(msg,txt);
                     strcpy(server_response->cmd,msg);
                    
@@ -382,6 +406,7 @@ int main(int argc, char const *argv[])
 
                       if (new==NULL && new1==NULL)
                       {
+                        
                         //mudar na tabela de utilizadores ativos
                         user_t *new_user = newUser();
                         strcpy(new_user->nick_name,cliente_request->nick_name);
@@ -398,7 +423,15 @@ int main(int argc, char const *argv[])
 
                         //MSSG "server :> novo utilizador "se for um utilizador novo, ou
                         
-                        
+                        //MSSG "server :> <nome_antigo> mudou o seu nome para " se já tinha nome atribuído.
+                        //criar a mssg
+                        char msg[485] = "";
+                        strcat(msg,"MSSG server :> ");
+                        strcat(msg,cliente_request->nick_name);
+                        strcat(msg," mudou o seu nome para ");
+                        strcat(msg,txt);
+                        strcpy(server_response->cmd,msg);
+
                         //enviar a todos
                         nodeUser_t *current = active_users->header->next;
                         listUser_print(active_users);
@@ -406,7 +439,8 @@ int main(int argc, char const *argv[])
                         while (current!=NULL)
                         {
                           
-                          if (strcmp(current->user.nick_name,cliente_request->nick_name)!=0 && current->user.channel==cliente_request->channel)
+                          //printf("%s %s\n",current->user.nick_name,txt);
+                          if (strcmp(current->user.nick_name,txt)!=0 && current->user.channel==cliente_request->channel)
                           {
                             printf("current: %s\n",current->user.nick_name);
                             strcpy(server_response->nick_name,current->user.nick_name);
@@ -420,7 +454,7 @@ int main(int argc, char const *argv[])
                           current = current->next;
 
                         }
-                        //MSSG "server :> <nome_antigo> mudou o seu nome para " se já tinha nome atribuído.
+
 
                         strcpy(cliente_request->nick_name,txt);
                         strcpy(cliente_request->cmd,"RPLY 001 - Nome atribuído com sucesso\0");
