@@ -15,12 +15,13 @@
 
 typedef struct client{
 	
-	char cmd[485]; // 481 Byte; começa em 0 e termina em 484
-	char nick_name[21]; //21 bytes; começa em 485 e termina em 506
-	int channel; //4bytes; começa em 507 e termina em 511
-	bool role;  //1 Byte; 512;
+	char cmd[483]; // 482 Byte; começa em 0 e termina em 483
+	char nick_name[21]; //21 bytes; começa em 484 e termina em 504
+	int channel; //4 bytes; começa em 505 e termina em 508
+	int role;  //4 Byte; 509-512;
 
 }client_t;
+
 
 void print_client(client_t *n)
 {
@@ -32,10 +33,10 @@ client_t *bufferToClient(char buff[MAXDATASIZE])
 {
   client_t *new_client = malloc(sizeof(client_t));;
   
-  memcpy(&new_client->cmd, buff + 0, 485);
-  memcpy(&new_client->nick_name, buff + 485, 21);
-  memcpy(&new_client->channel, buff + 506, 4);
-  memcpy(&new_client->role, buff + 511, 1);
+  memcpy(&new_client->cmd, buff + 0, 482);
+  memcpy(&new_client->nick_name, buff + 483, 21);
+  memcpy(&new_client->channel, buff + 504, 4);
+  memcpy(&new_client->role, buff + 508, 4);
   
   return new_client;
 }
@@ -50,7 +51,7 @@ char *clientToBuffer(client_t *n)
   memcpy(buf + k, &n->cmd, sizeof(n->cmd));  k += sizeof(n->cmd);
   memcpy(buf + k, &n->nick_name, sizeof(n->nick_name));  k += sizeof(n->nick_name);
   memcpy(buf + k, &n->channel, sizeof(n->channel));  k += sizeof(n->channel);
-  memcpy(&buf[511], &n->role, 1); 
+  memcpy(buf + k, &n->role,sizeof(n->role)); 
 
   return buf;
 } 
@@ -95,9 +96,9 @@ int main()
 	while (1)
 	{	
 
-		char str[485]; 
+		char str[483]; 
 		printf("\nCONSOLE:");
-		fgets(str,485,stdin); 
+		fgets(str,483,stdin); 
 		strcpy(cliente->cmd,str); 
 
 		cliente->cmd[strlen(cliente->cmd)-1]='\0';

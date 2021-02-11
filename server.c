@@ -15,10 +15,10 @@
 
 typedef struct client{
 	
-	char cmd[485]; // 485 Byte; começa em 0 e termina em 484
-	char nick_name[21]; //21 bytes; começa em 485 e termina em 506
-	int channel; //4bytes; começa em 507 e termina em 511
-	bool role;  //1 Byte; 512;
+	char cmd[483]; // 482 Byte; começa em 0 e termina em 482
+	char nick_name[21]; //21 bytes; começa em 483 e termina em 503
+	int channel; //4 bytes; começa em 504 e termina em 507
+	int role;  //4 Byte; 508-511;
 
 }client_t;
 
@@ -46,10 +46,10 @@ client_t *bufferToClient(char buff[BUFSIZE])
 {
   client_t *new_client = malloc(sizeof(client_t));;
   
-  memcpy(&new_client->cmd, buff + 0, 485);
-  memcpy(&new_client->nick_name, buff + 485, 21);
-  memcpy(&new_client->channel, buff + 506, 4);
-  memcpy(&new_client->role, buff + 511, 1);
+  memcpy(&new_client->cmd, buff + 0, 482);
+  memcpy(&new_client->nick_name, buff + 483, 21);
+  memcpy(&new_client->channel, buff + 504, 4);
+  memcpy(&new_client->role, buff + 508, 4);
   
   return new_client;
 }
@@ -64,7 +64,7 @@ char *clientToBuffer(client_t *n)
   memcpy(buf + k, &n->cmd, sizeof(n->cmd));  k += sizeof(n->cmd);
   memcpy(buf + k, &n->nick_name, sizeof(n->nick_name));  k += sizeof(n->nick_name);
   memcpy(buf + k, &n->channel, sizeof(n->channel));  k += sizeof(n->channel);
-  memcpy(&buf[511], &n->role, 1); 
+  memcpy(buf + k, &n->role,sizeof(n->role)); 
 
   return buf;
 } 
@@ -179,13 +179,13 @@ int main(int argc, char const *argv[])
           client_t *cliente = malloc(sizeof(client_t));
           strcpy(cliente->nick_name,"Anonimo\0");
           strcpy(cliente->cmd,"MSSG server :> novo utilizador - Anonimo\0");
-          cliente->role = 1;
+          cliente->role = 2;
           cliente->channel = 0;
           
           user_t *new_user = newUser();
           new_user->sock = new_socket;
           strcpy(new_user->nick_name,"Anonimo\0");
-          new_user->role = 1;
+          new_user->role = 2;
           new_user->channel = 0;          
           
           printf("new_socket:%d\n",new_user->sock);
@@ -214,11 +214,12 @@ int main(int argc, char const *argv[])
 
           }
 
-
+          print_client(cliente);
           listUser_insert(active_users,new_user);
           memcpy(&buffer, clientToBuffer(cliente), 512);
-          //cliente = bufferToClient(buffer);
-          //print_client(cliente);
+          
+          cliente = bufferToClient(buffer);
+          print_client(cliente);
 
           size_t total = 0;
           int len = BUFSIZE;
@@ -425,7 +426,7 @@ int main(int argc, char const *argv[])
                         
                         //MSSG "server :> <nome_antigo> mudou o seu nome para " se já tinha nome atribuído.
                         //criar a mssg
-                        char msg[485] = "";
+                        char msg[481] = "";
                         strcat(msg,"MSSG server :> ");
                         strcat(msg,cliente_request->nick_name);
                         strcat(msg," mudou o seu nome para ");
@@ -522,7 +523,7 @@ int main(int argc, char const *argv[])
                     //mensagem global MSSG "server :> entrou neste canal"
 
                     //criar a mssg
-                    char msg[485] = "";
+                    char msg[481] = "";
                     strcat(msg,"MSSG ");
                     strcat(msg,cliente_request->nick_name);
                     strcat(msg," :> deixou este canal");
@@ -606,6 +607,45 @@ int main(int argc, char const *argv[])
                 }
                 else if (!strncmp(cliente_request->cmd,"KICK",4))
                 {
+                  if (cliente_request->role==2)
+                  {
+                    //criar a mssg
+                    char msg[485] = "";
+                    strcat(msg,"MSSG ");
+                    strcat(msg,cliente_request->nick_name);
+                    strcat(msg," :> deixou este canal");
+                   
+
+
+                    //enviar a todos
+                    nodeUser_t *current = active_users->header->next;
+
+                    while (current!=NULL)
+                    {
+                      printf("current: %s,channel: %d==%d \n",current->user.nick_name, current->user.channel, cliente_request->channel);
+                      if (current->user.channel==cliente_request->channel)
+                      {
+                        //printf("current: %s\n",current->user.nick_name);
+                        strcpy(server_response->nick_name,current->user.nick_name);
+                        server_response->channel = current->user.channel;
+                        server_response->role = current->user.role;
+                        strcpy(server_response->cmd,msg);
+
+                        memcpy(&buffer, clientToBuffer(server_response), 512);
+                        send(current->user.sock, buffer, BUFSIZE, 0 );
+                      }
+                      current = current->next;
+
+                    }                  }
+                  else
+                  {
+                    strcpy(server_response->cmd,"RPLY 602 – Erro. Ação não autorizada, utilizador cliente não é um operador.\0");
+                    memcpy(&buffer, clientToBuffer(server_response), 512);
+                    send(i, buffer, BUFSIZE, 0 );
+                  }
+                  
+                  
+
 
                 }
                 else if (!strncmp(cliente_request->cmd,"REGS",4))
