@@ -111,11 +111,11 @@ int main(int argc, char const *argv[])
     listClient_insert(database,user);
     listClient_print(database);
     
+    //utilizadores ativos
     listUser_t *active_users = newListUser();
     listUser_print(active_users);
-  //utilizadores ativos
 
-
+    int n_anonimo = 0;
 
   // Creating socket file descriptor 
   if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) { 
@@ -176,15 +176,25 @@ int main(int argc, char const *argv[])
           }
 
           printf("Client connected.\n");
+          
+          char n[21];
+          sprintf(n, "%d", n_anonimo);
+          n_anonimo++;
+
+          char name[21] = "";
+          strcat(name,"Anonimo_");
+          strcat(name,n);
+
+          
           client_t *cliente = malloc(sizeof(client_t));
-          strcpy(cliente->nick_name,"Anonimo\0");
+          strcpy(cliente->nick_name,name);
           strcpy(cliente->cmd,"MSSG server :> novo utilizador - Anonimo\0");
           cliente->role = 2;
           cliente->channel = 0;
           
           user_t *new_user = newUser();
           new_user->sock = new_socket;
-          strcpy(new_user->nick_name,"Anonimo\0");
+          strcpy(new_user->nick_name,name);
           new_user->role = 2;
           new_user->channel = 0;          
           
