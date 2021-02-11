@@ -218,8 +218,8 @@ int main(int argc, char const *argv[])
           listUser_insert(active_users,new_user);
           memcpy(&buffer, clientToBuffer(cliente), 512);
           
-          cliente = bufferToClient(buffer);
-          print_client(cliente);
+          //cliente = bufferToClient(buffer);
+          //print_client(cliente);
 
           size_t total = 0;
           int len = BUFSIZE;
@@ -486,6 +486,7 @@ int main(int argc, char const *argv[])
                 }
                 else if (!strncmp(cliente_request->cmd,"JOIN",4))
                 {
+                  //txt
                   ssize_t size = strlen(cliente_request->cmd);
                   char txt[21];
                   memcpy( txt, &cliente_request->cmd,size);
@@ -607,49 +608,106 @@ int main(int argc, char const *argv[])
                 }
                 else if (!strncmp(cliente_request->cmd,"KICK",4))
                 {
-                  if (cliente_request->role==2)
+                  //txt
+                  ssize_t size = strlen(cliente_request->cmd);
+                  char txt[21];
+                  memcpy( txt, &cliente_request->cmd,size);
+                  txt[size] = '\0';
+                  memcpy(txt, txt+5,size-5);
+                  memcpy(&txt[size-5],"\0",1);
+
+                  printf("txt: %s\n",txt);
+
+                  if(strlen(txt)==0)
                   {
-                    //criar a mssg
-                    char msg[485] = "";
-                    strcat(msg,"MSSG ");
-                    strcat(msg,cliente_request->nick_name);
-                    strcat(msg," :> deixou este canal");
-                   
-
-
-                    //enviar a todos
-                    nodeUser_t *current = active_users->header->next;
-
-                    while (current!=NULL)
-                    {
-                      printf("current: %s,channel: %d==%d \n",current->user.nick_name, current->user.channel, cliente_request->channel);
-                      if (current->user.channel==cliente_request->channel)
-                      {
-                        //printf("current: %s\n",current->user.nick_name);
-                        strcpy(server_response->nick_name,current->user.nick_name);
-                        server_response->channel = current->user.channel;
-                        server_response->role = current->user.role;
-                        strcpy(server_response->cmd,msg);
-
-                        memcpy(&buffer, clientToBuffer(server_response), 512);
-                        send(current->user.sock, buffer, BUFSIZE, 0 );
-                      }
-                      current = current->next;
-
-                    }                  }
-                  else
+                    strcpy(cliente_request->cmd,"RPLY 002 - Erro: Falta introdução do nome.\0");
+                    memcpy(&buffer, clientToBuffer(cliente_request), 512);
+                    send(i, buffer, BUFSIZE, 0 );
+                  }
+                  else if (cliente_request->role!=2)
                   {
+                    
                     strcpy(server_response->cmd,"RPLY 602 – Erro. Ação não autorizada, utilizador cliente não é um operador.\0");
                     memcpy(&buffer, clientToBuffer(server_response), 512);
                     send(i, buffer, BUFSIZE, 0 );
-                  }
-                  
-                  
 
+                  }
+                  else if (!strcmp(txt,"admin"))
+                  {
+                    
+                    strcpy(server_response->cmd,"MSSG KICKAR O ADMIN?!?.... Nem penses....\0");
+                    memcpy(&buffer, clientToBuffer(server_response), 512);
+                    send(i, buffer, BUFSIZE, 0 );
+
+                  }
+                  else
+                  {
+
+                    //verificar se o nome é usado
+                    client_R_t *new = newClient();
+                    strcpy(new->nick_name,txt);
+                    new = listClient_find(database,new);
+
+                    if (new==NULL)
+                    {
+                      strcpy(server_response->cmd,"MSSG Utilizador não existe\0");
+                      memcpy(&buffer, clientToBuffer(server_response), 512);
+                      send(i, buffer, BUFSIZE, 0 );
+                    }
+                    else
+                    {
+                      listClient_remove(database,new);
+
+                      //criar a mssg
+                      char msg[485] = "";
+                      strcat(msg,"MSSG ");
+                      strcat(msg,txt);
+                      strcat(msg," :> foi expulso");
+
+                      //enviar a todos
+                      nodeUser_t *current = active_users->header->next;
+
+                      while (current!=NULL)
+                      {
+                        //printf("current: %s\n",current->user.nick_name);
+                        if (strcmp(current->user.nick_name,cliente_request->nick_name)!=0)
+                        {
+                          strcpy(server_response->nick_name,current->user.nick_name);
+                          server_response->channel = current->user.channel;
+                          server_response->role = current->user.role;
+                          strcpy(server_response->cmd,msg);
+
+                          memcpy(&buffer, clientToBuffer(server_response), 512);
+                          send(current->user.sock, buffer, BUFSIZE, 0 ); 
+                        }
+                        current = current->next;
+
+                      }   
+
+                      strcpy(server_response->nick_name, cliente_request->nick_name);
+                      server_response->channel = cliente_request->channel;
+                      server_response->role = cliente_request->role;
+    
+                      strcpy(server_response->cmd,"RPLY 601 – Utilizador expulso.\0");
+                      memcpy(&buffer, clientToBuffer(server_response), 512);
+                      send(i, buffer, BUFSIZE, 0 );
+                    }
+                    
+                  }
 
                 }
                 else if (!strncmp(cliente_request->cmd,"REGS",4))
                 {
+                  if (cliente_request->role==2)
+                  {
+                    
+                  }
+                  else
+                  {
+                    strcpy(server_response->cmd,"RPLY 702 – Erro. Ação não autorizada, utilizador cliente não é um operador.\0");
+                    memcpy(&buffer, clientToBuffer(server_response), 512);
+                    send(i, buffer, BUFSIZE, 0 );
+                  }
 
                 }
                 else if (!strncmp(cliente_request->cmd,"OPER",4))
