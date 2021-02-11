@@ -47,9 +47,9 @@ RPLY 004 - Erro: nome já em uso (num outro utilizador registado ou em uso por u
 utilizador não registado, e o comando não tem qualquer efeito
 Mensagens do servidor enviadas a todos os clientes ativos no mesmo canal do cliente
 que faz o pedido,
-MSSG "server :> novo utilizador <nome>"
+MSSG "server :> novo utilizador "nome""
 se for um utilizador novo, ou
-MSSG "server :> <nome_antigo> mudou o seu nome para <nome>"
+MSSG "server :> <nome_antigo> mudou o seu nome para "nome""
 se já tinha nome atribuído.
 
 ## MSSG "mensagem"
@@ -85,9 +85,9 @@ RPLY 301 - Mudança de canal com sucesso
 RPLY 302 – Erro. canal não existente
 RPLY 303 - Erro. Não pode mudar para o canal (utilizador não autenticado)
 Mensagem do servidor enviada a todos os clientes ativos no <canal>:
-MSSG "server :> <nome> entrou neste canal"
+MSSG "server :> "nome" entrou neste canal"
 Mensagem do servidor enviada a todos os clientes ativos no <canal_anterior>:
-MSSG "server :> <nome> deixou este canal"
+MSSG "server :> "nome" deixou este canal"
 
 # Gestão de utilizadores registados [3 valores]
 O servidor deve fazer a gestão de utilizadores registados (criar e/ou remover) por um
@@ -96,12 +96,12 @@ deve ser inicializado com um operador por default, por exemplo “admin” com p
 “admin”).
 
 # KICK "nome"
-Operador expulsa o utilizador <nome> (remove da lista dos utilizadores registados)
+Operador expulsa o utilizador "nome" (remove da lista dos utilizadores registados)
 Respostas do servidor:
 RPLY 601 – Utilizador expulso.
 RPLY 602 – Erro. Ação não autorizada, utilizador cliente não é um operador.
 Mensagem do servidor enviada a todos os clientes:
-MSSG "server :> <nome> foi expulso”
+MSSG "server :> "nome" foi expulso”
 
 # REGS "nome" "password"
 Regista o utilizador (inclui na lista dos utilizadores registados)
@@ -109,10 +109,23 @@ Respostas do servidor:
 RPLY 701 – Utilizador foi registado com sucesso.
 RPLY 702 – Erro. Ação não autorizada, utilizador cliente não é um operador.
 Mensagem do servidor enviada a todos os clientes:
-MSSG "server :> <nome> foi registado”
+MSSG "server :> "nome" foi registado”
 # Gestão de utilizadores operadores [3 valores]
 O servidor deve conceder poder de gestão de operadores (promover e/ou desistir) aos
 operadores existentes. O sistema deve implementar os comandos OPER, e QUIT.
+
+## OPER "nome"
+
+Promove o utilizador "nome" (registado) à categoria de operador.
+Respostas do servidor:
+RPLY 801 – Foi promovido a operador.
+RPLY 802 – Erro. Ação não autorizada, utilizador cliente não é um operador.
+RPLY 803 – Erro. Ação não autorizada, utilizador cliente não está autenticado.
+RPLY 804 – Erro. Ação não autorizada, utilizador "nome" não é um utilizador registado.
+Mensagem do servidor enviada a todos os clientes:
+MSSG "server :> "nome" foi promovido a operador”
+
+
 
 #  TO DO LIST
 

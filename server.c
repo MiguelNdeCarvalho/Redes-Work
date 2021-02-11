@@ -211,14 +211,15 @@ int main(int argc, char const *argv[])
             
             if (current->user.sock!=i  && current->user.channel==new_user->channel)
             {
-              //printf("current: %s\n",current->user.nick_name);
-              strcpy(new_user->nick_name,current->user.nick_name);
-              new_user->channel = current->user.channel;
-              new_user->role = current->user.role;
+              user_t *send_msg = newUser();
+              strcpy(send_msg->nick_name,current->user.nick_name);
+              send_msg->channel = current->user.channel;
+              send_msg->role = current->user.role;
               //printf("sock:%d | i:%d\n",current->user.sock,i);
 
               memcpy(&buffer, clientToBuffer(cliente), 512);
               send(current->user.sock, buffer, BUFSIZE, 0 );
+              free(send_msg);
             }
             current = current->next;
 
@@ -614,6 +615,40 @@ int main(int argc, char const *argv[])
                 }
                 else if (!strncmp(cliente_request->cmd,"WHOS",4))
                 {
+                  listUser_print(active_users);
+                  //criar a mssg
+                  char msg[485] = "";
+                  char n[21];
+
+                  strcat(msg,"MSSG IN CHANNEl ");
+                  sprintf(n, "%d", cliente_request->channel);
+                  strcat(msg,n);
+                  strcat(msg,": ");
+
+                  
+                  //enviar a todos
+                  nodeUser_t *current = active_users->header->next;
+
+                  while (current!=NULL)
+                  {
+                    //printf("current: %s\n",current->user.nick_name);
+                    if (current->user.channel==cliente_request->channel)
+                    {
+                      strcat(msg,current->user.nick_name);
+                      strcat(msg,", ");
+
+                    }
+                    current = current->next;
+
+                  }   
+
+                  strcpy(server_response->nick_name, cliente_request->nick_name);
+                  server_response->channel = cliente_request->channel;
+                  server_response->role = cliente_request->role;
+
+                  strcpy(server_response->cmd,msg);
+                  memcpy(&buffer, clientToBuffer(server_response), 512);
+                  send(i, buffer, BUFSIZE, 0 );
 
                 }
                 else if (!strncmp(cliente_request->cmd,"KICK",4))
