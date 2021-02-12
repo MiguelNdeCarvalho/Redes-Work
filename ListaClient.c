@@ -9,7 +9,6 @@ typedef struct client_R{
 	
 	char nick_name[21]; //21 bytes; começa em 485 e termina em 506
     char pass[21]; //21 bytes; começa em 485 e termina em 506
-	int channel; //4bytes; começa em 507 e termina em 511
 	int role;  //1 Byte; 512;
 
 }client_R_t;
@@ -92,7 +91,6 @@ client_R_t *listClient_find(listClient_R_t *list, client_R_t *client)
             strcpy(client_R->nick_name,client->nick_name);
             strcpy(client_R->pass,client->pass);
             client_R->role = client->role;
-            client_R->channel = client->channel;
 
             return client_R;
         }
@@ -119,7 +117,6 @@ client_R_t *listClient_remove(listClient_R_t *list, client_R_t *client)
             strcpy(client_R->nick_name,client->nick_name);
             strcpy(client_R->pass,client->pass);
             client_R->role = client->role;
-            client_R->channel = client->channel;
 
             prev->next=current->next;
             current=prev;

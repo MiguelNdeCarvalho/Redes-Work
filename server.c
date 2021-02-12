@@ -188,7 +188,8 @@ int main(int argc, char const *argv[])
           
           client_t *cliente = malloc(sizeof(client_t));
           strcpy(cliente->nick_name,name);
-          strcpy(cliente->cmd,"MSSG server :> novo utilizador - Anonimo\0");
+          strcpy(cliente->cmd,"MSSG server :> novo utilizador - Anonimo_\0");
+          strcat(cliente->cmd,n);
           cliente->role = 2;
           cliente->channel = 0;
           
@@ -490,7 +491,7 @@ int main(int argc, char const *argv[])
                 }
                 else if (!strncmp(cliente_request->cmd,"LIST",4))
                 {
-                  strcpy(cliente_request->cmd,"LIST [1,2,3,4]\0");
+                  strcpy(cliente_request->cmd,"MSSG CHANNELS: [1,2,3,4]\0");
                   memcpy(&buffer, clientToBuffer(cliente_request), 512);
                   send(i, buffer, BUFSIZE, 0 );
 
@@ -523,7 +524,7 @@ int main(int argc, char const *argv[])
                   }
                   else
                   {
-                    printf("---------------------\n");
+                    //printf("---------------------\n");
                     print_client(server_response);
                     listUser_print(active_users);
 
@@ -547,7 +548,7 @@ int main(int argc, char const *argv[])
 
                     while (current!=NULL)
                     {
-                      printf("current: %s,channel: %d==%d \n",current->user.nick_name, current->user.channel, cliente_request->channel);
+                      //printf("current: %s,channel: %d==%d \n",current->user.nick_name, current->user.channel, cliente_request->channel);
                       if (current->user.channel==prev)
                       {
                         //printf("current: %s\n",current->user.nick_name);
@@ -745,7 +746,80 @@ int main(int argc, char const *argv[])
                 {
                   if (cliente_request->role==2)
                   {
+                    //txt
+                    ssize_t size = strlen(cliente_request->cmd);
+                    char txt[42];
+                    memcpy( txt, &cliente_request->cmd,size);
+                    txt[size] = '\0';
+                    memcpy(txt, txt+5,size-5);
+                    memcpy(&txt[size-5],"\0",1);
+
+                    printf("txt: %s\n",txt);
+
+                    int z=0;
+                    while (txt[z]!=' ')
+                    {
+                      z++;
+                    }
                     
+                    //nick
+                    char nick[21];
+                    memcpy( nick, &txt,z);
+                    nick[z] = '\0';
+
+                    printf("nick: %s, len:%ld\n",nick,strlen(nick));
+                    //pass
+                    size = strlen(txt);
+                    char pass[21];
+                    memcpy( pass, txt+z+1,size-z);
+                    pass[size-z] = '\0';
+
+                    printf("pass: %s, len:%ld\n",pass,strlen(pass));
+
+
+                    if(strlen(txt)==0)
+                    {
+                      strcpy(cliente_request->cmd,"RPLY 002 - Erro: Falta introdução do nome.\0");
+                      memcpy(&buffer, clientToBuffer(cliente_request), 512);
+                      send(i, buffer, BUFSIZE, 0 );
+                    }
+                    else if(strlen(pass)==0)
+                    {
+                      strcpy(cliente_request->cmd,"RPLY 004 Falta introdução da pass.\0");
+                      memcpy(&buffer, clientToBuffer(cliente_request), 512);
+                      send(i, buffer, BUFSIZE, 0 );
+                    }
+                    else
+                    {
+
+                      //verificar se o nome é usado
+                      client_R_t *new = newClient();
+                      strcpy(new->nick_name,nick);
+                      new = listClient_find(database,new);
+
+                      if (new==NULL)
+                      {
+                        client_R_t *new_client = newClient();
+                        strcpy(new_client->nick_name,nick);
+                        strcpy(new_client->pass,pass);
+                        new_client->role = 1;
+
+                        listClient_insert(database,new_client);
+                        listClient_print(database);
+
+                        strcpy(server_response->cmd,"RPLY 701 – Utilizador foi registado com sucesso.\0");
+                        memcpy(&buffer, clientToBuffer(server_response), 512);
+                        send(i, buffer, BUFSIZE, 0 );
+                      }
+                      else
+                      {
+                        strcpy(server_response->cmd,"RPLY 701 – Utilizador já existe.\0");
+                        memcpy(&buffer, clientToBuffer(server_response), 512);
+                        send(i, buffer, BUFSIZE, 0 );
+                      }
+
+                    }
+                  
                   }
                   else
                   {
