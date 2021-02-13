@@ -28,7 +28,7 @@ bool validCharacters(char *name) {
 
   for (int i = 0; i<size;i++) {
     //printf("i:%d\n",name[i]);
-    if (!((name[i] >= 48 && name[i] <=  57) || (name[i] >= 65 && name[i] <= 122) || name[i]==10)) {
+    if (!((name[i] >= 48 && name[i] <=  57) || (name[i] >= 65 && name[i] <= 122) || name[i]==10) || (name[i] >= 65 && name[i] <= 90) || (name[i] >= 97 && name[i] <= 122)) {
       return false;
     }
   }
@@ -902,6 +902,8 @@ int main(int argc, char const *argv[])
                 }
                 else if (!strncmp(cliente_request->cmd,"OPER",4))
                 {
+
+
 
                 }
                 else if (!strncmp(cliente_request->cmd,"QUIT",4))
