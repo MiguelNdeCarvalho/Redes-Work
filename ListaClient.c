@@ -48,6 +48,11 @@ listClient_R_t *newListClient()
     return new;
 }
 
+void print_R(client_R_t n)
+{
+	printf("client_status( nick:%s role:%d pass:%s)\n"
+							,n.nick_name,n.role,n.pass);
+}
 
 //Escreve na consola a informacao de um dado pais
 void listClient_print(listClient_R_t *list){
@@ -56,7 +61,7 @@ void listClient_print(listClient_R_t *list){
     current = list->header->next;
     while (current!=NULL)
     {
-        printf("\"%s\", ",current->client.nick_name);
+        print_R(current->client);
         current=current->next;
     }
     printf("\n");
@@ -88,9 +93,9 @@ client_R_t *listClient_find(listClient_R_t *list, client_R_t *client)
         if (strcmp(current->client.nick_name,client->nick_name) == 0)
         {
             client_R_t *client_R = newClient();
-            strcpy(client_R->nick_name,client->nick_name);
-            strcpy(client_R->pass,client->pass);
-            client_R->role = client->role;
+            strcpy(client_R->nick_name,current->client.nick_name);
+            strcpy(client_R->pass,current->client.pass);
+            client_R->role = current->client.role;
 
             return client_R;
         }
@@ -114,9 +119,9 @@ client_R_t *listClient_remove(listClient_R_t *list, client_R_t *client)
         if (strcmp(current->client.nick_name,client->nick_name) == 0)
         {
             client_R_t *client_R = newClient();
-            strcpy(client_R->nick_name,client->nick_name);
-            strcpy(client_R->pass,client->pass);
-            client_R->role = client->role;
+            strcpy(client_R->nick_name,current->client.nick_name);
+            strcpy(client_R->pass,current->client.pass);
+            client_R->role = current->client.role;
 
             prev->next=current->next;
             current=prev;

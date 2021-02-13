@@ -13,8 +13,7 @@ typedef struct client_R{
 	
 	char nick_name[21]; //21 bytes; começa em 485 e termina em 506
   char pass[21]; //21 bytes; começa em 485 e termina em 506
-	int channel; //4bytes; começa em 507 e termina em 511
-	bool role;  //1 Byte; 512;
+	int role;  //1 Byte; 512;
 
 }client_R_t;
 
@@ -36,7 +35,7 @@ struct client_R *newClient();
 struct nodeClient *newNodeClient();
 struct listClient *newListClient();
 
-
+void print_R(client_R_t *n);
 //Escreve na consola a informacao de um dado pais
 void listClient_print(listClient_R_t *list);
 

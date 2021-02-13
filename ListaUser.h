@@ -12,7 +12,8 @@ typedef struct user{
     int sock;
     char nick_name[21]; //21 bytes; começa em 485 e termina em 506
     int channel; //4bytes; começa em 507 e termina em 511
-	bool role;  //1 Byte; 512;
+	int role;  //1 Byte; 512;
+    bool auth;
 
 }user_t;
 
