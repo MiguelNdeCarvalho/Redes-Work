@@ -166,7 +166,23 @@ int main()
 					strcpy(cliente->cmd,"\0");
 
 				}
-				//cliente->nick_name
+
+				if (!strncmp(cod,"801",3))
+				{
+					//output
+					size = strlen(server_response->cmd);
+					char output[size];
+					memcpy( output, &server_response->cmd,size);
+					output[size] = '\0';
+					memcpy(output, output+9,size-4);
+					memcpy(&output[size-4],"\0",1);
+					//printf("output:%s n:%ld\n",output,strlen(output));
+
+					//mudar os dados
+					cliente->role = server_response->role;
+					strcpy(cliente->cmd,"\0");
+
+				}				//cliente->nick_name
 
 
 			}
@@ -296,7 +312,22 @@ int main()
 
 				}
 				//cliente->nick_name
+				if (!strncmp(cod,"801",3))
+				{
+					//output
+					size = strlen(server_response->cmd);
+					char output[size];
+					memcpy( output, &server_response->cmd,size);
+					output[size] = '\0';
+					memcpy(output, output+9,size-4);
+					memcpy(&output[size-4],"\0",1);
+					//printf("output:%s n:%ld\n",output,strlen(output));
 
+					//mudar os dados
+					cliente->role = server_response->role;
+					strcpy(cliente->cmd,"\0");
+
+				}	
 
 			}
 

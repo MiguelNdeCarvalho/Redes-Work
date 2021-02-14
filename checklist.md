@@ -125,7 +125,13 @@ RPLY 804 – Erro. Ação não autorizada, utilizador "nome" não é um utilizad
 Mensagem do servidor enviada a todos os clientes:
 MSSG "server :> "nome" foi promovido a operador”
 
-
+## QUIT
+Desiste de ser operador
+Respostas do servidor:
+RPLY 901 – Deixou de ser operador.
+RPLY 902 – Erro. Ação não autorizada, utilizador cliente não é um operador.
+Mensagem do servidor enviada a todos os clientes:
+MSSG "server :> <nome> deixou de ser operador
 
 #  TO DO LIST
 

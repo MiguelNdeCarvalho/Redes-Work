@@ -53,10 +53,10 @@ listUser_t *newListUser()
 
 void print_user(user_t n)
 {
-	printf("client_user( nick:%s role:%d channel:%d, sock:%d)\n"
-							,n.nick_name,n.role,n.channel,n.sock);
+	printf("client_user( nick:%s ,role:%d ,channel:%d, auth: %d, sock:%d)\n"
+							,n.nick_name,n.role,n.channel,n.auth,n.sock);
 }
-//Escreve na consola a informacao de um dado pais
+
 void listUser_print(listUser_t *list){
     
     nodeUser_t *current = newNodeUser();
@@ -96,9 +96,12 @@ user_t *listUser_find(listUser_t *list, user_t *user, int i)
         if (strcmp(current->user.nick_name,user->nick_name) == 0 && current->user.sock==i)
         {
             user_t *found_user = newUser();
-            strcpy(found_user->nick_name,user->nick_name);
-            found_user->role = user->role;
-            found_user->channel = user->channel;
+            strcpy(found_user->nick_name,current->user.nick_name);
+            found_user->role = current->user.role;
+            found_user->channel = current->user.channel;
+            found_user->sock = current->user.sock;
+            found_user->auth = current->user.auth;
+
 
             return found_user;
         }
@@ -123,10 +126,12 @@ user_t *listUser_find_name(listUser_t *list, user_t *user)
         if (strcmp(current->user.nick_name,user->nick_name) == 0 )
         {
             user_t *found_user = newUser();
-            strcpy(found_user->nick_name,user->nick_name);
-            found_user->role = user->role;
-            found_user->channel = user->channel;
-
+            strcpy(found_user->nick_name,current->user.nick_name);
+            found_user->role = current->user.role;
+            found_user->channel = current->user.channel;
+            found_user->sock = current->user.sock;
+            found_user->auth = current->user.auth;
+            
             return found_user;
         }
         current=current->next;
@@ -151,10 +156,10 @@ user_t *listUser_remove(listUser_t *list, user_t *user,int i)
         if (strcmp(current->user.nick_name,user->nick_name) == 0 && current->user.sock==i)
         {
             user_t *client_R = newUser();
-            strcpy(client_R->nick_name,user->nick_name);
-            client_R->sock = user->sock;
-            client_R->role = user->role;
-            client_R->channel = user->channel;
+            strcpy(client_R->nick_name,current->user.nick_name);
+            client_R->sock = current->user.sock;
+            client_R->role = current->user.role;
+            client_R->channel = current->user.channel;
 
             prev->next=current->next;
             current=prev;
