@@ -41,6 +41,34 @@
 % -------------------------------------------------------------------------------------------
 \section{Introdução} 
 
+\hspace{0,5cm}Neste trabalho foi solicitado a realização de um programa que simule um \textbf{Chat} 
+que seja composto por um \textbf{servidor} e por um ou vários \textbf{clientes}, utilizando um 
+\textbf{protocolo de texto simples (plain text single line protocol)}.
+
+O \textbf{servidor} deverá gerir vários clientes em \textbf{simultâneo} e ser responsável pela gestão:
+\begin{itemize}
+    \item da receção de mensagens;
+    \item do envio de mensagens;
+    \item dos diferentes canais, onde terá um canal "default" e outros canais alternativos;
+    \item dos dados dos utilizadores.
+\end{itemize}
+
+O \textbf{cliente} apresenta dois modos de funcionamento:
+\begin{itemize}
+    \item anónimo, só consegue aceder ao \textbf{canal "default"};
+    \item registado, consegue aceder a \textbf{todos os canais}.
+\end{itemize}
+\hspace{0,5cm}Em ambos os casos é \textbf{obrigatório} o uso de um \textbf{nickname}.
+
+Os \textbf{clientes registados} podem apresentar 2 \textbf{roles (categoria especial)}:
+\begin{itemize}
+    \item cliente convencional;
+    \item cliente operador, que permite gerir canais e gerir outros utilizadores.
+\end{itemize}
+
+O \textbf{protocolo de texto simples} é baseado em mensagens de texto, em que cada mensagem
+tem um \textbf{comprimento máximo de 512 bytes} e é iniciada por um comando com 4 caracteres
+e seguida de um ou mais parâmetros separados por espaços em branco.
 
 % -------------------------------------------------------------------------------------------
 
