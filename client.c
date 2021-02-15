@@ -100,6 +100,7 @@ int main()
 		printf("\nCONSOLE:");
 		fgets(str,483,stdin); 
 		strcpy(cliente->cmd,str); 
+		printf("\n");
 
 		cliente->cmd[strlen(cliente->cmd)-1]='\0';
 		
@@ -115,7 +116,7 @@ int main()
 
 			client_t *server_response = malloc(sizeof(client_t));
 			server_response = bufferToClient(buffer);
-			printf("MSSG: ");
+			//printf("MSSG: ");
 			print_client(server_response);
 
 			if (!strncmp(server_response->cmd,"RPLY",4))
@@ -138,7 +139,7 @@ int main()
 					output[size] = '\0';
 					memcpy(output, output+9,size-4);
 					memcpy(&output[size-4],"\0",1);
-					//printf("output:%s n:%ld\n",output,strlen(output));
+					printf("%s\n",output);
 
 					//mudar os dados
 					strcpy(cliente->nick_name,server_response->nick_name);
@@ -157,7 +158,7 @@ int main()
 					output[size] = '\0';
 					memcpy(output, output+9,size-4);
 					memcpy(&output[size-4],"\0",1);
-					//printf("output:%s n:%ld\n",output,strlen(output));
+					printf("%s\n",output);
 
 					//mudar os dados
 					strcpy(cliente->nick_name,server_response->nick_name);
@@ -176,7 +177,7 @@ int main()
 					output[size] = '\0';
 					memcpy(output, output+9,size-4);
 					memcpy(&output[size-4],"\0",1);
-					//printf("output:%s n:%ld\n",output,strlen(output));
+					printf("%s\n",output);
 
 					//mudar os dados
 					cliente->role = server_response->role;
@@ -196,7 +197,7 @@ int main()
 				cod[size] = '\0';
 				memcpy(cod, cod+5,size-4);
 				memcpy(&cod[size-4],"\0",1);
-				printf("cod:%s n:%ld\n",cod,strlen(cod));
+				//printf("cod:%s n:%ld\n",cod,strlen(cod));
 
 				printf("%s\n",cod);
 
@@ -223,7 +224,7 @@ int main()
 
 			//printf( "seded total of %zu bytes\n", total );
 
-			printf("I sent this: ");
+			printf("\nI sent this: ");
 			print_client(cliente);
 
 			bzero(buffer, MAXDATASIZE);
@@ -241,7 +242,7 @@ int main()
 
 			client_t *server_response = malloc(sizeof(client_t));
 			server_response = bufferToClient(buffer);
-			printf("I received this: ");
+			printf("\nI received this: ");
 			print_client(server_response);
 		
 			if (!strncmp(server_response->cmd,"RPLY",4))
@@ -253,7 +254,7 @@ int main()
 				cod[size] = '\0';
 				memcpy(cod, cod+5,size-4);
 				memcpy(&cod[size-4],"\0",1);
-				printf("cod:%s n:%ld\n",cod,strlen(cod));
+				printf("\n%s\n",cod);
 
 				if (!strncmp(cod,"001",3))
 				{
@@ -264,7 +265,7 @@ int main()
 					output[size] = '\0';
 					memcpy(output, output+9,size-4);
 					memcpy(&output[size-4],"\0",1);
-					//printf("output:%s n:%ld\n",output,strlen(output));
+					printf("\n%s\n",output);
 
 					//mudar os dados
 					strcpy(cliente->nick_name,server_response->nick_name);
@@ -283,7 +284,7 @@ int main()
 					output[size] = '\0';
 					memcpy(output, output+9,size-4);
 					memcpy(&output[size-4],"\0",1);
-					//printf("output:%s n:%ld\n",output,strlen(output));
+					printf("\n%s\n",output);
 
 					//mudar os dados
 					strcpy(cliente->nick_name,server_response->nick_name);
@@ -302,7 +303,7 @@ int main()
 					output[size] = '\0';
 					memcpy(output, output+9,size-4);
 					memcpy(&output[size-4],"\0",1);
-					//printf("output:%s n:%ld\n",output,strlen(output));
+					printf("\n%s\n",output);
 
 					//mudar os dados
 					strcpy(cliente->nick_name,server_response->nick_name);
@@ -321,7 +322,7 @@ int main()
 					output[size] = '\0';
 					memcpy(output, output+9,size-4);
 					memcpy(&output[size-4],"\0",1);
-					//printf("output:%s n:%ld\n",output,strlen(output));
+					printf("\n%s\n",output);
 
 					//mudar os dados
 					cliente->role = server_response->role;
@@ -338,7 +339,7 @@ int main()
 					output[size] = '\0';
 					memcpy(output, output+9,size-4);
 					memcpy(&output[size-4],"\0",1);
-					printf("output:%s n:%ld\n",output,strlen(output));
+					printf("\n%s\n",output);
 
 					//mudar os dados
 					cliente->role = server_response->role;
