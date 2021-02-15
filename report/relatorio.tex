@@ -72,6 +72,23 @@ e seguida de um ou mais parâmetros separados por espaços em branco.
 
 % -------------------------------------------------------------------------------------------
 \section{Implementação}
+
+\hspace{0,5cm}Inicialmente pensámos como deveríamos proceder para realizar o trabalho, então começámos por 
+definir como se encontram distribuídos os \textbf{512 Bytes} que correspondem ao tamanho
+\textbf{máximo} da mensagem.
+
+Posteriormente, certificamos-nos que o \textbf{Servidor} e o(s) \textbf{Cliente(s)} conseguiam
+comunicar entre si, ou seja, que o protocolo estava a funcionar corretamente.
+
+O próximo desafio foi a identificação dos \textbf{Clientes} que se encontram conectados ao servidor
+e os \textbf{Clientes} que se encontram registados. Para solucionar isto, procedemos à criação de duas
+\textbf{structs} onde esta informação iria ser guardada. Na \textbf{struct} \verb|ListaUser| é guardada
+a informação dos \textbf{clientes} que estão \textbf{atualmente conectados ao servidor}.
+Na \textbf{struct} \verb|ListaCliente| é guardada a informação de \textbf{todos os clientes que se encontram
+registados}.
+
+De seguida, começámos por proceder à implementação dos \textbf{comandos} tal como era pedido.
+
 % -------------------------------------------------------------------------------------------
 \section{Funções}
 % -------------------------------------------------------------------------------------------
