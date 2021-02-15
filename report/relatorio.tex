@@ -73,9 +73,9 @@ e seguida de um ou mais parâmetros separados por espaços em branco.
 % -------------------------------------------------------------------------------------------
 \section{Implementação}
 
-\hspace{0,5cm}Inicialmente pensámos como deveríamos proceder para realizar o trabalho, então começámos por 
-definir como se encontram distribuídos os \textbf{512 Bytes} que correspondem ao tamanho
-\textbf{máximo} da mensagem.
+\hspace{0,5cm}Inicialmente pensámos como deveríamos proceder para realizar o trabalho, então 
+começámos por definir como se encontram distribuídos os \textbf{512 Bytes} que correspondem ao
+tamanho \textbf{máximo} da mensagem.
 
 Posteriormente, certificamos-nos que o \textbf{Servidor} e o(s) \textbf{Cliente(s)} conseguiam
 comunicar entre si, ou seja, que o protocolo estava a funcionar corretamente.
@@ -84,18 +84,37 @@ O próximo desafio foi a identificação dos \textbf{Clientes} que se encontram 
 e os \textbf{Clientes} que se encontram registados. Para solucionar isto, procedemos à criação de duas
 \textbf{structs} onde esta informação iria ser guardada. Na \textbf{struct} \verb|ListaUser| é guardada
 a informação dos \textbf{clientes} que estão \textbf{atualmente conectados ao servidor}.
-Na \textbf{struct} \verb|ListaCliente| é guardada a informação de \textbf{todos os clientes que se encontram
+Na \textbf{struct} \verb|ListaClient| é guardada a informação de \textbf{todos os clientes que se encontram
 registados}.
 
 De seguida, começámos por proceder à implementação dos \textbf{comandos} tal como era pedido.
 
 % -------------------------------------------------------------------------------------------
 \section{Funções}
+
+\begin{itemize}
+    \item \verb|bufferToClient| - a função recebe como argumento um \verb|buffer| de 
+    \textbf{tamanho 512 bytes} e o conteúdo deste é transferido para uma \textbf{struct} do 
+    tipo \verb|client_t|;
+    \item \verb|clientToBuffer| - a função recebe como argumento um \verb|client_t| e o
+    conteúdo deste é transferido para um \verb|buffer| de \textbf{tamanho 512 bytes}.
+    \item \verb|validCharacters| - a função recebe como argumento um \verb|char| que corresponde
+    ao nome introduzido pelo utilizador e confirma se este não contém caracteres especiais,ou seja,
+    verifica se todos os elementos correspondem a \verb|a-z| ou \verb|A-Z| ou \verb|0-9|, caso 
+    algum elemento não respeite isto, o nome apresenta \textbf{caracteres não validos}.
+    \item \verb|print_client| - a função \verb|printa| o conteúdo da mensagem que é 
+    \textbf{enviado e recebido} entre o \textbf{servidor} e o \textbf{cliente};
+    \item \verb|print_User| - a função \verb|printa| a informação de um \textbf{cliente}
+    que se encontra conectado ao \textbf{utilizador}, ou seja, que se encontra na 
+    \textbf{lista} \verb|user|;
+    \item \verb|print_ClientR| - a função \verb|printa| a informação de um \textbf{cliente}
+    que se encontra registado.
+\end{itemize}
 % -------------------------------------------------------------------------------------------
 \section{Conclusão} % Conclusão
 \hspace{0,5cm}Em suma, com a realização deste trabalho \textbf{"Chat"} ficámos muito 
 mais esclarecidos sobre o seu funcionamento. \par
-Saliento que nos ajudou a entender como funciona o \textbf{Potocolo de Texto Simples}, 
+Saliento que nos ajudou a entender como funciona o \textbf{Protocolo de Texto Simples}, 
 usado para proceder à comunicação entre o \textbf{Servidor} e o(s) \textbf{Cliente(s)}. 
 
 % -------------------------------------------------------------------------------------------
