@@ -1,0 +1,168 @@
+\documentclass[11pt]{article}   % tipo de documento e tamanho das letras
+
+% os seguintes pacotes estendem a funcionalidade básica:
+\usepackage[a4paper, total={16cm, 24cm}]{geometry} % tamanho da pagina e do texto
+\usepackage[portuguese]{babel}  % traduz para portugues
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}           % graficos
+\usepackage{amsmath}            % matematica
+\usepackage{tikz}               % diagramas
+    \usetikzlibrary{shadows}
+\usepackage{booktabs}           % tabelas com  melhor aspecto
+\usepackage[colorlinks=true]{hyperref}           % links para partes do documento ou para a web
+\usepackage{listings}           % incluir codigo
+    \renewcommand\lstlistingname{Listagem}  % Listing em portugues
+    \lstset{numbers=left, numberstyle=\tiny, numbersep=5pt, basicstyle=\footnotesize\ttfamily, frame=tb,rulesepcolor=\color{gray}, breaklines=true}
+\usepackage{blindtext}
+
+% -------------------------------------------------------------------------------------------
+\title
+{
+    \includegraphics[width=0.3\textwidth]{images/logo_universidade.png}
+    \\[0.1cm]
+    \textbf{Desenvolvimento de um Cliente e Servidor com um protocolo simples} \\
+    Redes de Computadores
+}
+
+\author
+{
+    \textbf{Professores:} Luís Rato, Pedro Pathingo \\
+    \textbf{Realizado por:} Miguel de Carvalho (43108), João Pereira (42864) 
+}
+\date{\today}
+
+% -------------------------------------------------------------------------------------------
+%                                Body                                                       %
+% -------------------------------------------------------------------------------------------
+
+\begin{document}
+\maketitle
+
+% -------------------------------------------------------------------------------------------
+\section{Introdução} 
+
+\hspace{0,5cm}Neste trabalho foi solicitado a realização de um programa que simule um \textbf{Chat} 
+que seja composto por um \textbf{servidor} e por um ou vários \textbf{clientes}, utilizando um 
+\textbf{protocolo de texto simples (plain text single line protocol)}.
+
+O \textbf{servidor} deverá gerir vários clientes em \textbf{simultâneo} e ser responsável pela gestão:
+\begin{itemize}
+    \item da receção de mensagens;
+    \item do envio de mensagens;
+    \item dos diferentes canais, onde terá um canal "default" e outros canais alternativos;
+    \item dos dados dos utilizadores.
+\end{itemize}
+
+O \textbf{cliente} apresenta dois modos de funcionamento:
+\begin{itemize}
+    \item anónimo, só consegue aceder ao \textbf{canal "default"};
+    \item registado, consegue aceder a \textbf{todos os canais}.
+\end{itemize}
+\hspace{0,5cm}Em ambos os casos é \textbf{obrigatório} o uso de um \textbf{nickname}.
+
+Os \textbf{clientes registados} podem apresentar 2 \textbf{roles (categoria especial)}:
+\begin{itemize}
+    \item cliente convencional;
+    \item cliente operador, que permite gerir canais e gerir outros utilizadores.
+\end{itemize}
+
+O \textbf{protocolo de texto simples} é baseado em mensagens de texto, em que cada mensagem
+tem um \textbf{comprimento máximo de 512 bytes} e é iniciada por um comando com 4 caracteres
+e seguida de um ou mais parâmetros separados por espaços em branco.
+
+% -------------------------------------------------------------------------------------------
+\section{Implementação}
+
+\hspace{0,5cm}Inicialmente pensámos como deveríamos proceder para realizar o trabalho, então 
+começámos por definir como se encontram distribuídos os \textbf{512 Bytes} que correspondem ao
+tamanho \textbf{máximo} da mensagem.
+
+Posteriormente, certificamos-nos que o \textbf{Servidor} e o(s) \textbf{Cliente(s)} conseguiam
+comunicar entre si, ou seja, que o protocolo estava a funcionar corretamente.
+
+O próximo desafio foi a identificação dos \textbf{Clientes} que se encontram conectados ao servidor
+e os \textbf{Clientes} que se encontram registados. Para solucionar isto, procedemos à criação de duas
+\textbf{structs} onde esta informação iria ser guardada. Na \textbf{struct} \verb|ListaUser| é guardada
+a informação dos \textbf{clientes} que estão \textbf{atualmente conectados ao servidor}.
+Na \textbf{struct} \verb|ListaClient| é guardada a informação de \textbf{todos os clientes que se encontram
+registados}.
+
+De seguida, começámos por proceder à implementação dos \textbf{comandos} tal como era pedido.
+
+% -------------------------------------------------------------------------------------------
+\section{Funções}
+
+\begin{itemize}
+    \item \verb|bufferToClient| - a função recebe como argumento um \verb|buffer| de 
+    \textbf{tamanho 512 bytes} e o conteúdo deste é transferido para uma \textbf{struct} do 
+    tipo \verb|client_t|;
+    \item \verb|clientToBuffer| - a função recebe como argumento um \verb|client_t| e o
+    conteúdo deste é transferido para um \verb|buffer| de \textbf{tamanho 512 bytes}.
+    \item \verb|validCharacters| - a função recebe como argumento um \verb|char| que corresponde
+    ao nome introduzido pelo utilizador e confirma se este não contém caracteres especiais,ou seja,
+    verifica se todos os elementos correspondem a \verb|a-z| ou \verb|A-Z| ou \verb|0-9|, caso 
+    algum elemento não respeite isto, o nome apresenta \textbf{caracteres não validos}.
+    \item \verb|print_client| - a função \verb|printa| o conteúdo da mensagem que é 
+    \textbf{enviado e recebido} entre o \textbf{servidor} e o \textbf{cliente};
+    \item \verb|print_User| - a função \verb|printa| a informação de um \textbf{cliente}
+    que se encontra conectado ao \textbf{utilizador}, ou seja, que se encontra na 
+    \textbf{lista} \verb|user|;
+    \item \verb|print_ClientR| - a função \verb|printa| a informação de um \textbf{cliente}
+    que se encontra registado.
+\end{itemize}
+% -------------------------------------------------------------------------------------------
+\section{Comandos}
+
+Os comandos são a interpretação do \textbf{servidor} face aos \textbf{4 primeiros bytes} do 
+\verb|buffer| enviado pelo \textbf{cliente}. Para fazer os vários comandos basta que façamos condições
+que comparem este \textbf{4 primeiros bytes}. Caso não exista uma correspondência direta a um
+comando que esteja predefinido no \textbf{servidor}, o \textbf{servidor} diz que o \textbf{comando}
+é invalido.
+
+\subsection{Lista de Comandos}
+
+\begin{itemize}
+    \item Comandos acessíveis por todos os \textbf{clientes}:
+    \begin{itemize}
+        \item \verb|NICK nome| - atribui ou muda o \textbf{nickname} com um máximo de 9 caracteres;
+        \item \verb|MSSG mensagem| - envia uma mensagem para o canal ativo.
+    \end{itemize}
+    \item Comando acessíveis por todos os \textbf{clientes registados}:
+        \begin{itemize}
+            \item \verb|PASS password| - autentica o utilizador com a password;
+            \item \verb|JOIN canal| - muda para um canal;
+            \item \verb|LIST| - lista os canais existentes;
+            \item \verb|WHOS| - lista e mostra informação dos utilizadores conectados no canal.
+        \end{itemize}
+    \item Comando acessíveis por todos os \textbf{clientes que são operadores}
+        \begin{itemize}
+            \item \verb|KICK nome| - expulsa o utilizador (remove da lista dos utilizadores registados);
+            \item \verb|REGS nome password| - regista o utilizador (inclui na lista dos utilizadores registados);
+            \item \verb|OPER nome| - promove o utilizador (registado) à categoria de operador;
+            \item \verb|QUIT| - desiste de ser operador.
+        \end{itemize}
+    \item Comandos enviados pelo \textbf{servidor}
+        \begin{itemize}
+            \item \verb|RPLY código (código de resposta) / [listas]| - respostas a comandos.
+            \item \verb|MSSG "origem nome/categoria:> mensagem"| - outras mensagens.
+        \end{itemize}
+\end{itemize}
+
+% -------------------------------------------------------------------------------------------
+\section{Limitações}
+
+O trabalho apresenta somente \textbf{duas limitações}:
+\begin{itemize}
+    \item Não guarda os \textbf{clientes registados} num ficheiro;
+    \item Não apresenta \textbf{deteção de erros} no \textbf{protocolo}.
+\end{itemize}
+
+% -------------------------------------------------------------------------------------------
+\section{Conclusão} % Conclusão
+\hspace{0,5cm}Em suma, com a realização deste trabalho \textbf{"Chat"} ficámos muito 
+mais esclarecidos sobre o seu funcionamento. \par
+Saliento que nos ajudou a entender como funciona o \textbf{Protocolo de Texto Simples}, 
+usado para proceder à comunicação entre o \textbf{Servidor} e o(s) \textbf{Cliente(s)}. 
+
+% -------------------------------------------------------------------------------------------
+\end{document}
