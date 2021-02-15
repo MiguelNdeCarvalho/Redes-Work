@@ -111,6 +111,44 @@ De seguida, começámos por proceder à implementação dos \textbf{comandos} ta
     que se encontra registado.
 \end{itemize}
 % -------------------------------------------------------------------------------------------
+\section{Comandos}
+
+Os comandos são a interpretação do \textbf{servidor} face aos \textbf{4 primeiros bytes} do 
+\verb|buffer| enviado pelo \textbf{cliente}. Para fazer os vários comandos basta que façamos condições
+que comparem este \textbf{4 primeiros bytes}. Caso não exista uma correspondência direta a um
+comando que esteja predefinido no \textbf{servidor}, o \textbf{servidor} diz que o \textbf{comando}
+é invalido.
+
+\subsection{Lista de Comandos}
+
+\begin{itemize}
+    \item Comandos acessíveis por todos os \textbf{clientes}:
+    \begin{itemize}
+        \item \verb|NICK nome| - atribui ou muda o \textbf{nickname} com um máximo de 9 caracteres;
+        \item \verb|MSSG mensagem| - envia uma mensagem para o canal ativo.
+    \end{itemize}
+    \item Comando acessíveis por todos os \textbf{clientes registados}:
+        \begin{itemize}
+            \item \verb|PASS password| - autentica o utilizador com a password;
+            \item \verb|JOIN canal| - muda para um canal;
+            \item \verb|LIST| - lista os canais existentes;
+            \item \verb|WHOS| - lista e mostra informação dos utilizadores conectados no canal.
+        \end{itemize}
+    \item Comando acessíveis por todos os \textbf{clientes que são operadores}
+        \begin{itemize}
+            \item \verb|KICK nome| - expulsa o utilizador (remove da lista dos utilizadores registados);
+            \item \verb|REGS nome password| - regista o utilizador (inclui na lista dos utilizadores registados);
+            \item \verb|OPER nome| - promove o utilizador (registado) à categoria de operador;
+            \item \verb|QUIT| - desiste de ser operador.
+        \end{itemize}
+    \item Comandos enviados pelo \textbf{servidor}
+        \begin{itemize}
+            \item \verb|RPLY código (código de resposta) / [listas]| - respostas a comandos.
+            \item \verb|MSSG "origem nome/categoria:> mensagem"| - outras mensagens.
+        \end{itemize}
+\end{itemize}
+
+% -------------------------------------------------------------------------------------------
 \section{Conclusão} % Conclusão
 \hspace{0,5cm}Em suma, com a realização deste trabalho \textbf{"Chat"} ficámos muito 
 mais esclarecidos sobre o seu funcionamento. \par
